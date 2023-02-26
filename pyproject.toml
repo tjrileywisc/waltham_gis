@@ -1,0 +1,19 @@
+[tool.pdm]
+
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "Timothy Riley", email = "timothyjohnriley@gmail.com"},
+]
+dependencies = [
+    "geopandas>=0.12.2",
+    "dvc>=2.45.1",
+    "jupyter>=1.0.0",
+    "tqdm>=4.64.1",
+    "seaborn>=0.12.2",
+    "dvc-gdrive>=2.19.1",
+]
+requires-python = ">=3.11"
+license = {text = "MIT"}

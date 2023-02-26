@@ -1,0 +1,4 @@
+
+# python stuff
+*.venv
+.pdm.toml
