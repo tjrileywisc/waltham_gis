@@ -295,6 +295,11 @@ requires_python = ">=3.6"
 summary = "Composable style cycles"
 
 [[package]]
+name = "dbfread"
+version = "2.0.7"
+summary = "Read DBF Files with Python"
+
+[[package]]
 name = "debugpy"
 version = "1.6.6"
 requires_python = ">=3.7"
@@ -1750,7 +1755,7 @@ dependencies = [
 
 [metadata]
 lock_version = "4.1"
-content_hash = "sha256:8d8be3251a3c88f5f0db0e129f5dada451ad2627a69a88dd6661bbefa12e06e9"
+content_hash = "sha256:557b3f0dd152d8fa14f96d0490ba4d7180384cf725bde1daf907950c3b60c1e7"
 
 [metadata.files]
 "aiohttp 3.8.4" = [
@@ -2221,6 +2226,10 @@ content_hash = "sha256:8d8be3251a3c88f5f0db0e129f5dada451ad2627a69a88dd6661bbefa
 "cycler 0.11.0" = [
     {url = "https://files.pythonhosted.org/packages/34/45/a7caaacbfc2fa60bee42effc4bcc7d7c6dbe9c349500e04f65a861c15eb9/cycler-0.11.0.tar.gz", hash = "sha256:9c87405839a19696e837b3b818fed3f5f69f16f1eec1a1ad77e043dcea9c772f"},
     {url = "https://files.pythonhosted.org/packages/5c/f9/695d6bedebd747e5eb0fe8fad57b72fdf25411273a39791cde838d5a8f51/cycler-0.11.0-py3-none-any.whl", hash = "sha256:3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3"},
+]
+"dbfread 2.0.7" = [
+    {url = "https://files.pythonhosted.org/packages/4c/94/51349e43503e30ed7b4ecfe68a8809cdb58f722c0feb79d18b1f1e36fe74/dbfread-2.0.7-py2.py3-none-any.whl", hash = "sha256:f604def58c59694fa0160d7be5d0b8d594467278d2bb6a47d46daf7162c84cec"},
+    {url = "https://files.pythonhosted.org/packages/ad/ae/a5891681f5012724d062a4ca63ec2ff539c73d5804ba594e7e0e72099d3f/dbfread-2.0.7.tar.gz", hash = "sha256:07c8a9af06ffad3f6f03e8fe91ad7d2733e31a26d2b72c4dd4cfbae07ee3b73d"},
 ]
 "debugpy 1.6.6" = [
     {url = "https://files.pythonhosted.org/packages/01/d9/3fe6737f760673f63bfaee35d6134cbfefc45b6fc672758b319eaaf7cb64/debugpy-1.6.6-cp38-cp38-win_amd64.whl", hash = "sha256:c05349890804d846eca32ce0623ab66c06f8800db881af7a876dc073ac1c2225"},

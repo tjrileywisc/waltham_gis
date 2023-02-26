@@ -2,3 +2,6 @@
 # python stuff
 *.venv
 .pdm.toml
+
+# data ignores
+data/
