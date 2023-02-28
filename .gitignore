@@ -2,6 +2,7 @@
 # python stuff
 *.venv
 .pdm.toml
+__pycache__
 
 # data ignores
 data/
