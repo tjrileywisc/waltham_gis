@@ -496,6 +496,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "et-xmlfile"
+version = "1.1.0"
+requires_python = ">=3.6"
+summary = "An implementation of lxml.xmlfile for the standard library"
+
+[[package]]
 name = "executing"
 version = "1.2.0"
 summary = "Get the currently executing AST node of a frame, and other information"
@@ -1209,6 +1215,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "openpyxl"
+version = "3.1.2"
+requires_python = ">=3.6"
+summary = "A Python library to read/write Excel 2010 xlsx/xlsm files"
+dependencies = [
+    "et-xmlfile",
+]
+
+[[package]]
 name = "orjson"
 version = "3.8.6"
 requires_python = ">=3.7"
@@ -1778,7 +1793,7 @@ dependencies = [
 
 [metadata]
 lock_version = "4.1"
-content_hash = "sha256:fb6bfd4eb630157e180e29521d1ee77706bfc802eff2f2bd4831c0cbde6cefde"
+content_hash = "sha256:95af8df599af7c9ed2adda34df7aa5b2f040460f14d860b8c76dee4c8a353390"
 
 [metadata.files]
 "aiohttp 3.8.4" = [
@@ -2391,6 +2406,10 @@ content_hash = "sha256:fb6bfd4eb630157e180e29521d1ee77706bfc802eff2f2bd4831c0cbd
     {url = "https://files.pythonhosted.org/packages/2b/d6/1415765d0604f4f176eb5b22666cf74c8ec11a82a94d5bbf2afb318fc6c9/dvclive-2.1.0-py3-none-any.whl", hash = "sha256:1a2644f37a5b5ee3c9dbf7ef66bfe55be8b40d08a137e7d6a7d3fb9dd5b88b9d"},
     {url = "https://files.pythonhosted.org/packages/d9/f6/61037734cd47c3db6c654ff08600740f9690ebdac16e56d0c8a68bfecdcc/dvclive-2.1.0.tar.gz", hash = "sha256:99c64f3de61e1b05b5b17204ab0a9d88b61c77911474438d4ecad8b776b29d1d"},
 ]
+"et-xmlfile 1.1.0" = [
+    {url = "https://files.pythonhosted.org/packages/3d/5d/0413a31d184a20c763ad741cc7852a659bf15094c24840c5bdd1754765cd/et_xmlfile-1.1.0.tar.gz", hash = "sha256:8eb9e2bc2f8c97e37a2dc85a09ecdcdec9d8a396530a6d5a33b30b9a92da0c5c"},
+    {url = "https://files.pythonhosted.org/packages/96/c2/3dd434b0108730014f1b96fd286040dc3bcb70066346f7e01ec2ac95865f/et_xmlfile-1.1.0-py3-none-any.whl", hash = "sha256:a2ba85d1d6a74ef63837eed693bcb89c3f752169b0e3e7ae5b16ca5e1b3deada"},
+]
 "executing 1.2.0" = [
     {url = "https://files.pythonhosted.org/packages/28/3c/bc3819dd8b1a1588c9215a87271b6178cc5498acaa83885211f5d4d9e693/executing-1.2.0-py2.py3-none-any.whl", hash = "sha256:0314a69e37426e3608aada02473b4161d4caf5a4b244d1d0c48072b8fee7bacc"},
     {url = "https://files.pythonhosted.org/packages/8f/ac/89ff37d8594b0eef176b7cec742ac868fef853b8e18df0309e3def9f480b/executing-1.2.0.tar.gz", hash = "sha256:19da64c18d2d851112f09c287f8d3dbbdf725ab0e569077efb6cdcbd3497c107"},
@@ -2994,6 +3013,10 @@ content_hash = "sha256:fb6bfd4eb630157e180e29521d1ee77706bfc802eff2f2bd4831c0cbd
 "omegaconf 2.3.0" = [
     {url = "https://files.pythonhosted.org/packages/09/48/6388f1bb9da707110532cb70ec4d2822858ddfb44f1cdf1233c20a80ea4b/omegaconf-2.3.0.tar.gz", hash = "sha256:d5d4b6d29955cc50ad50c46dc269bcd92c6e00f5f90d23ab5fee7bfca4ba4cc7"},
     {url = "https://files.pythonhosted.org/packages/e3/94/1843518e420fa3ed6919835845df698c7e27e183cb997394e4a670973a65/omegaconf-2.3.0-py3-none-any.whl", hash = "sha256:7b4df175cdb08ba400f45cae3bdcae7ba8365db4d165fc65fd04b050ab63b46b"},
+]
+"openpyxl 3.1.2" = [
+    {url = "https://files.pythonhosted.org/packages/42/e8/af028681d493814ca9c2ff8106fc62a4a32e4e0ae14602c2a98fc7b741c8/openpyxl-3.1.2.tar.gz", hash = "sha256:a6f5977418eff3b2d5500d54d9db50c8277a368436f4e4f8ddb1be3422870184"},
+    {url = "https://files.pythonhosted.org/packages/6a/94/a59521de836ef0da54aaf50da6c4da8fb4072fb3053fa71f052fd9399e7a/openpyxl-3.1.2-py2.py3-none-any.whl", hash = "sha256:f91456ead12ab3c6c2e9491cf33ba6d08357d802192379bb482f1033ade496f5"},
 ]
 "orjson 3.8.6" = [
     {url = "https://files.pythonhosted.org/packages/07/7c/fc0f255a3ef4da3eaa7c5ae69cfbedfa5dd60f52b05a1de335b9cd74d93d/orjson-3.8.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:caa5053f19584816f063c887d94385db481fc01d995d6a717ce4fbb929653ec2"},
