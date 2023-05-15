@@ -1,0 +1,4 @@
+outs:
+- md5: 19b51276b7d9850ab07469c33ac40043
+  size: 1447451
+  path: investigations/owner_occupied_homes/likely_homeowners.csv
