@@ -6,6 +6,7 @@ from qgis.core import QgsProject
 
 
 @alg(name="calc_zoning", label="calculation of units for a parcel", group="examplescripts", group_label="example_scripts")
+@alg.input(type=alg.SOURCE, name='INPUT', label='Input vector layer')
 @alg.output(type=alg.NUMBER, name="N_UNITS", label="number of units")
 def calc_zoning(instance, parameters, context, feedback, inputs):
     """
@@ -13,7 +14,11 @@ def calc_zoning(instance, parameters, context, feedback, inputs):
     Waltham's zoning rules for that parcel and the MBTA's provided
     shapefiles for Waltham.
     """
-    return {'OUTPUT': 0}
+    input_featuresource = instance.parameterAsSource(parameters,
+                                                     'INPUT',
+                                                     context)
+    numfeatures = input_featuresource.featureCount()
+    return {'OUTPUT': numfeatures}
 
 
 # functions from district tabs
