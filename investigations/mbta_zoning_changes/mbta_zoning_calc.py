@@ -1,208 +1,382 @@
 
+
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.core import (QgsProcessing,
+                       QgsFeatureSink,
+                       QgsProcessingException,
+                       QgsProcessingAlgorithm,
+                       QgsProcessingParameterFeatureSource,
+                       QgsProcessingParameterFeatureSink)
 from qgis import processing
-from qgis.processing import alg
-from qgis.core import QgsProject
 
+SQ_FT_IN_ACRE = 43560
 
+class Parcel:
+    def __init__(self, loc_id, transit_station, parcel_acres, parcel_sf, excluded_public, excluded_non_public, total_excluded_land, total_sensitive_land):
+       self.loc_id = loc_id
+       # ignore irrelevant freetext fields
+       self.transit_station = transit_station
+       self.parcel_acres = parcel_acres
+       self.parcel_sf = parcel_sf
+       self.excluded_public = excluded_public
+       self.excluded_non_public = excluded_non_public
+       self.total_excluded_land = total_excluded_land
+       self.total_sensitive_land = total_sensitive_land
+       
+    # functions from district tabs
+    # col N
+    def developable_parcel_sf(self, min_parcel_size, parcel_size, excluded_size):
 
-@alg(name="calc_zoning", label="calculation of units for a parcel", group="examplescripts", group_label="example_scripts")
-@alg.input(type=alg.SOURCE, name='INPUT', label='Input vector layer')
-@alg.output(type=alg.NUMBER, name="N_UNITS", label="number of units")
-def calc_zoning(instance, parameters, context, feedback, inputs):
-    """
-    Calculate the number of expected units in a parcel, given'
-    Waltham's zoning rules for that parcel and the MBTA's provided
-    shapefiles for Waltham.
-    """
-    input_featuresource = instance.parameterAsSource(parameters,
-                                                     'INPUT',
-                                                     context)
-    numfeatures = input_featuresource.featureCount()
-    return {'OUTPUT': numfeatures}
-
-
-# functions from district tabs
-
-# class Parcel:
-#     def __init__(self):
-#         self.fid
-#         self.loc_id
-#         # ignore irrelevant freetext fields
-#         self.transit_station
-#         self.parcel_acres
-#         self.parcel_sf
-#         self.excluded_public
-#         self.excluded_non_public
-#         self.total_excluded_land
-
-# # col N
-# def developable_parcel_sf(min_parcel_size, parcel_size, excluded_size):
-#     """_summary_
-
-#     Args:
-#         min_parcel_size (float): minimum parcel size set in district
-#         parcel_size (float)    : actual parcel lot size
-#         excluded_size(float) : excluded buildable area of the parcel
+        if parcel_size < min_parcel_size:
+            return 0
         
-#     """
+        return min(parcel_size - excluded_size, 0)
 
-#     if parcel_size < min_parcel_size:
-#         return 0
-    
-#     return min(parcel_size - excluded_size, 0)
+    # col Q
+    def developable_sqft_for_unit(self):
+        
+        return developable_parcel_sf
 
-# # col Q
-# def developable_sqft_for_unit():
-    
-#     return developable_parcel_sf
+    def open_space_required(self, required_open_space_frac):
 
-# def open_space_required(required_open_space_frac):
-#     """_summary_
-
-#     Args:
-#         required_open_space_frac (float):
-#             district required open space fraction
-#     """
-#     return max(0.2, required_open_space_frac)
+        return max(0.2, required_open_space_frac)
 
 
-# def open_space_removed():
-#     """_summary_
-#     """
+    def open_space_removed(self):
 
-#     if override_dev_sqft == 0:
-#         if allows_restricted_areas:
-#             return max(excluded_land_frac, open_space_required) * parcel_size
-#         else:
-#             return (excluded_land_frac + open_space_required) * parcel_size
-    
-#     return developable_sqft_for_unit * open_space_required
+        if override_dev_sqft == 0:
+            if allows_restricted_areas:
+                return max(excluded_land_frac, open_space_required) * parcel_size
+            else:
+                return (excluded_land_frac + open_space_required) * parcel_size
+        
+        return developable_sqft_for_unit * open_space_required
 
 
-# def model_parking_ratio(district_parking_ratio):
-#     """_summary_
+    def model_parking_ratio(self, district_parking_ratio):
 
-#     Args:
-#         district_parking_ratio (_type_): _description_
-#     """
-#     if district_parking_ratio == 0:
-#         return 0
-#     elif district_parking_ratio >= 0.01 and district_parking_ratio <= 0.5:
-#         return 0.3
-#     elif district_parking_ratio >= 0.51 and district_parking_ratio <= 1.0:
-#         return 0.45
-#     elif district_parking_ratio >= 1.01 and district_parking_ratio <= 1.25:
-#         return 0.55
-#     elif district_parking_ratio >= 1.26 and district_parking_ratio <= 1.5:
-#         return 0.6
-#     elif district_parking_ratio >= 1.51:
-#         return 0.65
+        if district_parking_ratio == 0:
+            return 0
+        elif district_parking_ratio >= 0.01 and district_parking_ratio <= 0.5:
+            return 0.3
+        elif district_parking_ratio >= 0.51 and district_parking_ratio <= 1.0:
+            return 0.45
+        elif district_parking_ratio >= 1.01 and district_parking_ratio <= 1.25:
+            return 0.55
+        elif district_parking_ratio >= 1.26 and district_parking_ratio <= 1.5:
+            return 0.6
+        elif district_parking_ratio >= 1.51:
+            return 0.65
 
 
-# def parking_area_removed(parcel_size):
-#     """_summary_
-#     """
+    def parking_area_removed(self, parcel_size):
 
-#     if developable_sqft_for_unit > 0:
-#         return (parcel_size - open_space_removed) * model_parking_ratio
-    
-#     return 0
+        if developable_sqft_for_unit > 0:
+            return (parcel_size - open_space_removed) * model_parking_ratio
+        
+        return 0
 
-# def building_footprint(parcel_size):
+    def building_footprint(self, parcel_size):
 
-#     if developable_sqft_for_unit == 0:
-#         return 0
-    
-#     return parcel_size - open_space_removed - parking_area_removed
+        if developable_sqft_for_unit == 0:
+            return 0
+        
+        return parcel_size - open_space_removed - parking_area_removed
 
-# def building_envelope():
+    def building_envelope(self):
 
-#     if building_footprint > 0:
-#         return building_footprint * max_building_stories
-    
-#     return 0
+        if building_footprint > 0:
+            return building_footprint * max_building_stories
+        
+        return 0
 
-# # unit capacity tests (i.e. NIMBY's playground)
+    def modeled_unit_capacity(self):
 
-# def modeled_unit_capacity():
+        if building_envelope / 1000 > 3:
+            return int(building_envelope / 1000)
+        else:
+            if building_envelope / 1000 > 2.5 and building_envelope / 1000 <= 3:
+                return 3
+        
+        return 0
 
-#     if building_envelope / 1000 > 3:
-#         return int(building_envelope / 1000)
-#     else:
-#         if building_envelope / 1000 > 2.5 and building_envelope / 1000 <= 3:
-#             return 3
-    
-#     return 0
+    def dwelling_units_per_acre_limit(self):
 
-# def dwelling_units_per_acre_limit():
+        if max_units_per_acre:
+            return (parcel_size / SQ_FT_IN_ACRE) * max_units_per_acre
+        
+        return None
 
-#     if max_units_per_acre:
-#         return (parcel_size / SQ_FT_IN_ACRE) * max_units_per_acre
-    
-#     return None
+    def max_lot_coverage_limit(self):
 
-# def max_lot_coverage_limit():
+        if max_lot_coverage_frac:
+            return (parcel_size * max_lot_coverage_frac) * max_building_stories / 1000
+        
+        return None
 
-#     if max_lot_coverage_frac:
-#         return (parcel_size * max_lot_coverage_frac) * max_building_stories / 1000
-    
-#     return None
+    def lot_area_per_dwelling_limit(self):
 
-# def lot_area_per_dwelling_limit():
+        if lot_area_per_dwelling_unit:
+            return parcel_size / lot_area_per_dwelling_unit
+        
+        return None
 
-#     if lot_area_per_dwelling_unit:
-#         return parcel_size / lot_area_per_dwelling_unit
-    
-#     return None
+    def far_limit(self):
 
-# def far_limit():
+        if far:
+            return parcel_size * far / 1000
+        
+        return None
 
-#     if far:
-#         return parcel_size * far / 1000
-    
-#     return None
+    def max_units_per_lot_limit(self):
 
-# def max_units_per_lot_limit():
+        if not max_units_per_lot:
+            return modeled_unit_capacity
+        elif max_units_per_lot < modeled_unit_capacity and max_units_per_lot >= 3:
+            return max_units_per_lot
+        elif max_units_per_lot < modeled_unit_capacity and max_units_per_lot < 3:
+            return 0
+        
+        return modeled_unit_capacity
 
-#     if not max_units_per_lot:
-#         return modeled_unit_capacity
-#     elif max_units_per_lot < modeled_unit_capacity and max_units_per_lot >= 3:
-#         return max_units_per_lot
-#     elif max_units_per_lot < modeled_unit_capacity and max_units_per_lot < 3:
-#         return 0
-    
-#     return modeled_unit_capacity
+    def is_non_conforming_lot(self):
 
-# def is_non_conforming_lot():
+        if parcel_size < minimum_lot_size and parcel_size > 0:
+            return True
+        
+        return False
 
-#     if parcel_size < minimum_lot_size and parcel_size > 0:
-#         return True
-    
-#     return False
+    def max_units_based_on_addl_lot_size_reqs(self):
 
-# def max_units_based_on_addl_lot_size_reqs():
+        if is_non_conforming_lot:
+            return 0
 
-#     if is_non_conforming_lot:
-#         return 0
+        if not addl_lot_sq_ft_by_dwelling_unit:
+            return "<no limit>" # TODO: how to render this?
 
-#     if not addl_lot_sq_ft_by_dwelling_unit:
-#         return "<no limit>" # TODO: how to render this?
-
-#     return int(((parcel_size-base_lot_size)/addl_lot_sq_ft_by_dwelling_unit)+1)
+        return int(((parcel_size-base_lot_size)/addl_lot_sq_ft_by_dwelling_unit)+1)
 
 
-# # unit compliance
+    # unit compliance
 
-# def final_lot_mf_unit_capacity():
+    def final_lot_mf_unit_capacity(self):
 
-#     min_constraints = min(modeled_unit_capacity, dwelling_units_per_acre_limit, max_lot_coverage_limit, lot_area_per_dwelling_limit, far_limit, max_units_per_lot_limit) 
+        min_constraints = min(modeled_unit_capacity, dwelling_units_per_acre_limit, max_lot_coverage_limit, lot_area_per_dwelling_limit, far_limit, max_units_per_lot_limit) 
 
-#     if min_constraints < 2.5:
-#         return 0
-#     elif min_constraints >= 2.5 and min_constraints < 3:
-#         return 3
-#     return int(min_constraints)
+        if min_constraints < 2.5:
+            return 0
+        elif min_constraints >= 2.5 and min_constraints < 3:
+            return 3
+        return int(min_constraints)
 
-# def du_per_ac():
+    def du_per_ac(self):
+        """
+        The final calculation of dwelling units per acre on the parcel
+        """
 
-#     return SQ_FT_IN_ACRE * final_lot_mf_unit_capacity / parcel_size
+        return SQ_FT_IN_ACRE * self.final_lot_mf_unit_capacity() / parcel_size
+
+
+class WalthamUnitCalc(QgsProcessingAlgorithm):
+    """
+    Calculates the number of units expected on a parcel
+    given the current zoning
+    """
+
+    # Constants used to refer to parameters and outputs. They will be
+    # used when calling the algorithm from another algorithm, or when
+    # calling from the QGIS console.
+
+    INPUT = 'INPUT'
+    ZONING_TABLE = 'ZONING_TABLE'
+    OUTPUT = 'OUTPUT'
+
+    def tr(self, string):
+        """
+        Returns a translatable string with the self.tr() function.
+        """
+        return QCoreApplication.translate('Processing', string)
+
+    def createInstance(self):
+        return WalthamUnitCalc()
+
+    def name(self):
+        """
+        Returns the algorithm name, used for identifying the algorithm. This
+        string should be fixed for the algorithm, and must not be localised.
+        The name should be unique within each provider. Names should contain
+        lowercase alphanumeric characters only and no spaces or other
+        formatting characters.
+        """
+        return 'myscript'
+
+    def displayName(self):
+        """
+        Returns the translated algorithm name, which should be used for any
+        user-visible display of the algorithm name.
+        """
+        return self.tr('My Script')
+
+    def group(self):
+        """
+        Returns the name of the group this algorithm belongs to. This string
+        should be localised.
+        """
+        return self.tr('Example scripts')
+
+    def groupId(self):
+        """
+        Returns the unique ID of the group this algorithm belongs to. This
+        string should be fixed for the algorithm, and must not be localised.
+        The group id should be unique within each provider. Group id should
+        contain lowercase alphanumeric characters only and no spaces or other
+        formatting characters.
+        """
+        return 'examplescripts'
+
+    def shortHelpString(self):
+        """
+        Returns a localised short helper string for the algorithm. This string
+        should provide a basic description about what the algorithm does and the
+        parameters and outputs associated with it..
+        """
+        return self.tr("Example algorithm short description")
+
+    def initAlgorithm(self, config=None):
+        """
+        Here we define the inputs and output of the algorithm, along
+        with some other properties.
+        """
+
+        # the shapefile with geometry and parcel attributes
+        self.addParameter(
+            QgsProcessingParameterFeatureSource(
+                self.INPUT,
+                self.tr('Input layer'),
+                [QgsProcessing.TypeVectorAnyGeometry]
+            )
+        )
+        
+        # a csv file that has the lookup for zoning params
+        self.addParameter(
+            QgsProcessingParameterFeatureSource(
+                self.ZONING_TABLE,
+                "Zoning table",
+                [QgsProcessing.TypeFile]
+            )
+        )
+
+        # We add a feature sink in which to store our processed features (this
+        # usually takes the form of a newly created vector layer when the
+        # algorithm is run in QGIS).
+        self.addParameter(
+            QgsProcessingParameterFeatureSink(
+                self.OUTPUT,
+                self.tr('Output layer')
+            )
+        )
+
+    def processAlgorithm(self, parameters, context, feedback):
+        """
+        Run the calculation of units
+        """
+
+        # Retrieve the feature source and sink. The 'dest_id' variable is used
+        # to uniquely identify the feature sink, and must be included in the
+        # dictionary returned by the processAlgorithm function.
+        source = self.parameterAsVectorLayer(
+            parameters,
+            self.INPUT,
+            context
+        )
+        
+        zoning_table = self.parameterAsSource(
+            parameters,
+            self.ZONING_TABLE,
+            context
+        )
+
+        # If source was not found, throw an exception to indicate that the algorithm
+        # encountered a fatal error. The exception text can be any string, but in this
+        # case we use the pre-built invalidSourceError method to return a standard
+        # helper text for when a source cannot be evaluated
+        if source is None:
+            raise QgsProcessingException(self.invalidSourceError(parameters, self.INPUT))
+
+        (sink, dest_id) = self.parameterAsSink(
+            parameters,
+            self.OUTPUT,
+            context,
+            source.fields(),
+            source.wkbType(),
+            source.sourceCrs()
+        )
+
+        # Send some information to the user
+        feedback.pushInfo('CRS is {}'.format(source.sourceCrs().authid()))
+
+        # If sink was not created, throw an exception to indicate that the algorithm
+        # encountered a fatal error. The exception text can be any string, but in this
+        # case we use the pre-built invalidSinkError method to return a standard
+        # helper text for when a sink cannot be evaluated
+        if sink is None:
+            raise QgsProcessingException(self.invalidSinkError(parameters, self.OUTPUT))
+
+        # Compute the number of steps to display within the progress bar and
+        # get features from source
+        total = 100.0 / source.featureCount() if source.featureCount() else 0
+        parcels = source.getFeatures()
+        
+        
+        for index, parcel in enumerate(parcels):
+            # Stop the algorithm if cancel button has been clicked
+            if feedback.isCanceled():
+                break
+            
+            feedback.pushInfo('LOC_ID is {}'.format(parcel["LOC_ID"]))
+            p = Parcel(
+                parcel["LOC_ID"],
+                parcel["TRANSIT"],
+                parcel["ACRES"],
+                parcel["SQFT"],
+                parcel["PublicInst"],
+                parcel["NonPubExc"],
+                parcel["Tot_Exclud"],
+                parcel["Tot_Sensit"]
+            )
+            
+            du_per_ac = p.du_per_ac()
+
+            # Add a feature in the sink
+            #sink.addFeature(parcel, QgsFeatureSink.FastInsert)
+
+            # Update the progress bar
+            feedback.setProgress(int(index * total))
+
+        # To run another Processing algorithm as part of this algorithm, you can use
+        # processing.run(...). Make sure you pass the current context and feedback
+        # to processing.run to ensure that all temporary layer outputs are available
+        # to the executed algorithm, and that the executed algorithm can send feedback
+        # reports to the user (and correctly handle cancellation and progress reports!)
+        if False:
+            buffered_layer = processing.run("native:buffer", {
+                'INPUT': dest_id,
+                'DISTANCE': 1.5,
+                'SEGMENTS': 5,
+                'END_CAP_STYLE': 0,
+                'JOIN_STYLE': 0,
+                'MITER_LIMIT': 2,
+                'DISSOLVE': False,
+                'OUTPUT': 'memory:'
+            }, context=context, feedback=feedback)['OUTPUT']
+
+        # Return the results of the algorithm. In this case our only result is
+        # the feature sink which contains the processed features, but some
+        # algorithms may return multiple feature sinks, calculated numeric
+        # statistics, etc. These should all be included in the returned
+        # dictionary, with keys matching the feature corresponding parameter
+        # or output names.
+        return {self.OUTPUT: dest_id}
+
+
+
