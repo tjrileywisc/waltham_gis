@@ -23,37 +23,50 @@ class Parcel:
        self.total_excluded_land = total_excluded_land
        self.total_sensitive_land = total_sensitive_land
        
+    def set_zoning(self, zoning):
+        self.zoning = zoning
+    
     # functions from district tabs
     # col N
-    def developable_parcel_sf(self, min_parcel_size, parcel_size, excluded_size):
+    def developable_parcel_sf(self):
 
-        if parcel_size < min_parcel_size:
+        if self.parcel_size < self.zoning["min_parcel_size"]:
             return 0
         
-        return min(parcel_size - excluded_size, 0)
+        return max(self.parcel_size - self.total_excluded_size, 0)
 
     # col Q
+    # NOTE: we're not applying any overrides
     def developable_sqft_for_unit(self):
         
-        return developable_parcel_sf
+        return self.developable_parcel_sf()
+    
+    # col R
+    def excluded_land_pct(self):
+        if self.parcel_sf == 0:
+            return 0
+        return self.total_excluded_land / self.parcel_sf
 
-    def open_space_required(self, required_open_space_frac):
+    # col S
+    # NOTE: this 0.2 appears to be hardcoded, is it in the law?
+    def open_space_required(self):
 
-        return max(0.2, required_open_space_frac)
+        return max(0.2, self.zoning["required_open_space_frac"])
 
-
+    # col T
+    # NOTE: we're not applying any overrides
     def open_space_removed(self):
 
-        if override_dev_sqft == 0:
-            if allows_restricted_areas:
-                return max(excluded_land_frac, open_space_required) * parcel_size
-            else:
-                return (excluded_land_frac + open_space_required) * parcel_size
-        
-        return developable_sqft_for_unit * open_space_required
+        if self.zoning["allows_restricted_areas"]:
+            return max(self.excluded_land_pct(), self.open_space_required()) * self.parcel_sf
+        else:
+            return (self.excluded_land_pct() + self.open_space_required()) * self.parcel_sf
 
+    # NOTE: this is from another sheet
+    # TODO: double check these
+    def model_parking_ratio(self):
 
-    def model_parking_ratio(self, district_parking_ratio):
+        district_parking_ratio = self.zoning["district_parking_ratio"]
 
         if district_parking_ratio == 0:
             return 0
@@ -68,100 +81,113 @@ class Parcel:
         elif district_parking_ratio >= 1.51:
             return 0.65
 
+    # col U
+    def parking_area_removed(self):
 
-    def parking_area_removed(self, parcel_size):
-
-        if developable_sqft_for_unit > 0:
-            return (parcel_size - open_space_removed) * model_parking_ratio
+        if self.developable_sqft_for_unit() > 0:
+            return (self.parcel_sf - self.open_space_removed()) * self.model_parking_ratio()
         
         return 0
 
-    def building_footprint(self, parcel_size):
+    # col V
+    def building_footprint(self):
 
-        if developable_sqft_for_unit == 0:
+        if self.developable_sqft_for_unit() == 0:
             return 0
         
-        return parcel_size - open_space_removed - parking_area_removed
+        return self.parcel_sf - self.open_space_removed() - self.parking_area_removed()
 
+    # col W
     def building_envelope(self):
 
-        if building_footprint > 0:
-            return building_footprint * max_building_stories
+        if self.building_footprint() > 0:
+            return self.building_footprint() * self.zoning["max_building_stories"]
         
         return 0
 
+    # col X
     def modeled_unit_capacity(self):
 
-        if building_envelope / 1000 > 3:
-            return int(building_envelope / 1000)
+        if self.building_envelope() / 1000 > 3:
+            return int(self.building_envelope() / 1000)
         else:
-            if building_envelope / 1000 > 2.5 and building_envelope / 1000 <= 3:
+            if (self.building_envelope() / 1000 > 2.5) and (self.building_envelope() / 1000 <= 3):
                 return 3
         
         return 0
 
+    # col Y
     def dwelling_units_per_acre_limit(self):
 
-        if max_units_per_acre:
-            return (parcel_size / SQ_FT_IN_ACRE) * max_units_per_acre
+        if self.zoning.get("max_units_per_acre"):
+            return (self.parcel_sf / SQ_FT_IN_ACRE) * self.zoning["max_units_per_acre"]
         
         return None
 
+    # col Z
     def max_lot_coverage_limit(self):
 
-        if max_lot_coverage_frac:
-            return (parcel_size * max_lot_coverage_frac) * max_building_stories / 1000
+        if self.zoning.get("max_lot_coverage_frac"):
+            return (self.parcel_sf * self.zoning["max_lot_coverage_frac"]) * self.zoning["max_building_stories"] / 1000
         
         return None
 
+    # col AA
     def lot_area_per_dwelling_limit(self):
 
-        if lot_area_per_dwelling_unit:
-            return parcel_size / lot_area_per_dwelling_unit
+        if self.zoning.get("lot_area_per_dwelling_unit"):
+            return self.parcel_sf / self.zoning["lot_area_per_dwelling_unit"]
         
         return None
 
+    # col AB
     def far_limit(self):
 
-        if far:
-            return parcel_size * far / 1000
+        if self.zoning.get("far"):
+            return self.parcel_sf * self.zoning["far"] / 1000
         
         return None
 
+    # col AC
     def max_units_per_lot_limit(self):
 
-        if not max_units_per_lot:
-            return modeled_unit_capacity
-        elif max_units_per_lot < modeled_unit_capacity and max_units_per_lot >= 3:
-            return max_units_per_lot
-        elif max_units_per_lot < modeled_unit_capacity and max_units_per_lot < 3:
+        if not self.zoning.get("max_units_per_lot"):
+            return self.modeled_unit_capacity()
+        elif (self.zoning["max_units_per_lot"] < self.modeled_unit_capacity()) and (self.zoning["max_units_per_lot"] >= 3):
+            return self.zoning["max_units_per_lot"]
+        elif (self.zoning["max_units_per_lot"] < self.modeled_unit_capacity()) and (self.zoning["max_units_per_lot"] < 3):
             return 0
         
-        return modeled_unit_capacity
+        return self.modeled_unit_capacity()
 
+    # col AD
     def is_non_conforming_lot(self):
 
-        if parcel_size < minimum_lot_size and parcel_size > 0:
+        if self.parcel_sf < self.zoning["minimum_lot_size"] and self.parcel_sf > 0:
             return True
         
         return False
 
+    # col AE
     def max_units_based_on_addl_lot_size_reqs(self):
 
-        if is_non_conforming_lot:
+        if self.is_non_conforming_lot():
             return 0
 
-        if not addl_lot_sq_ft_by_dwelling_unit:
+        if not self.zoning.get("addl_lot_sq_ft_by_dwelling_unit"):
             return "<no limit>" # TODO: how to render this?
 
-        return int(((parcel_size-base_lot_size)/addl_lot_sq_ft_by_dwelling_unit)+1)
+        return int(((self.parcel_sf - self.zoning["base_lot_size"])/self.zoning["addl_lot_sq_ft_by_dwelling_unit"])+1)
 
 
     # unit compliance
 
+    # col AF
     def final_lot_mf_unit_capacity(self):
 
-        min_constraints = min(modeled_unit_capacity, dwelling_units_per_acre_limit, max_lot_coverage_limit, lot_area_per_dwelling_limit, far_limit, max_units_per_lot_limit) 
+        min_constraints = min(
+            self.modeled_unit_capacity(), self.dwelling_units_per_acre_limit(), 
+            self.max_lot_coverage_limit(), self.lot_area_per_dwelling_limit(), self.far_limit(), self.max_units_per_lot_limit()) 
 
         if min_constraints < 2.5:
             return 0
@@ -169,12 +195,13 @@ class Parcel:
             return 3
         return int(min_constraints)
 
+    # col AG
     def du_per_ac(self):
         """
         The final calculation of dwelling units per acre on the parcel
         """
 
-        return SQ_FT_IN_ACRE * self.final_lot_mf_unit_capacity() / parcel_size
+        return SQ_FT_IN_ACRE * self.final_lot_mf_unit_capacity() / self.parcel_sf
 
 
 class WalthamUnitCalc(QgsProcessingAlgorithm):
@@ -344,6 +371,8 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
                 parcel["Tot_Exclud"],
                 parcel["Tot_Sensit"]
             )
+            
+            # TODO: get zone of parcel
             
             du_per_ac = p.du_per_ac()
 
