@@ -9,10 +9,32 @@ from qgis.core import (QgsProcessing,
                        QgsProcessingParameterFeatureSink)
 from qgis import processing
 
+
 SQ_FT_IN_ACRE = 43560
+# the parking minimum is effectively 2 everywhere for all housing types
+PARKING_MINIMUM = 2
+
+class Zone:
+    def __init__(self, name, front_setback, side_setback, rear_setback, height, stories, far, max_lot_coverage, min_open_space, lot_area, max_dua, lot_frontage):
+        self.name = name
+        self.front_setback = front_setback
+        self.side_setback = side_setback
+        self.rear_setback = rear_setback
+        self.height = height
+        self.stories = stories
+        self.far = far
+        self.max_lot_coverage = max_lot_coverage
+        self.min_open_space = min_open_space
+        self.lot_area = lot_area
+        self.max_dua = max_dua
+        self.lot_frontage = lot_frontage
+        
+        self.district_parking_ratio = PARKING_MINIMUM
+
+        
 
 class Parcel:
-    def __init__(self, loc_id, transit_station, parcel_acres, parcel_sf, excluded_public, excluded_non_public, total_excluded_land, total_sensitive_land):
+    def __init__(self, loc_id, transit_station, parcel_acres, parcel_sf, excluded_public, excluded_non_public, total_excluded_land, total_sensitive_land, zone):
        self.loc_id = loc_id
        # ignore irrelevant freetext fields
        self.transit_station = transit_station
@@ -22,6 +44,7 @@ class Parcel:
        self.excluded_non_public = excluded_non_public
        self.total_excluded_land = total_excluded_land
        self.total_sensitive_land = total_sensitive_land
+       self.zone = zone
        
     def set_zoning(self, zoning):
         self.zoning = zoning
@@ -30,10 +53,10 @@ class Parcel:
     # col N
     def developable_parcel_sf(self):
 
-        if self.parcel_size < self.zoning["min_parcel_size"]:
+        if self.parcel_sf < self.zoning["min_parcel_size"]:
             return 0
         
-        return max(self.parcel_size - self.total_excluded_size, 0)
+        return max(self.parcel_sf - self.total_excluded_size, 0)
 
     # col Q
     # NOTE: we're not applying any overrides
@@ -51,7 +74,7 @@ class Parcel:
     # NOTE: this 0.2 appears to be hardcoded, is it in the law?
     def open_space_required(self):
 
-        return max(0.2, self.zoning["required_open_space_frac"])
+        return max(0.2, self.zoning["min_open_space"])
 
     # col T
     # NOTE: we're not applying any overrides
@@ -102,7 +125,7 @@ class Parcel:
     def building_envelope(self):
 
         if self.building_footprint() > 0:
-            return self.building_footprint() * self.zoning["max_building_stories"]
+            return self.building_footprint() * self.zoning["stories"]
         
         return 0
 
@@ -120,8 +143,8 @@ class Parcel:
     # col Y
     def dwelling_units_per_acre_limit(self):
 
-        if self.zoning.get("max_units_per_acre"):
-            return (self.parcel_sf / SQ_FT_IN_ACRE) * self.zoning["max_units_per_acre"]
+        if self.zoning.get("max_dua"):
+            return (self.parcel_sf / SQ_FT_IN_ACRE) * self.zoning["max_dua"]
         
         return None
 
@@ -129,7 +152,7 @@ class Parcel:
     def max_lot_coverage_limit(self):
 
         if self.zoning.get("max_lot_coverage_frac"):
-            return (self.parcel_sf * self.zoning["max_lot_coverage_frac"]) * self.zoning["max_building_stories"] / 1000
+            return (self.parcel_sf * self.zoning["max_lot_coverage_frac"]) * self.zoning["stories"] / 1000
         
         return None
 
@@ -152,11 +175,11 @@ class Parcel:
     # col AC
     def max_units_per_lot_limit(self):
 
-        if not self.zoning.get("max_units_per_lot"):
+        if not self.zoning.get("max_dua"):
             return self.modeled_unit_capacity()
-        elif (self.zoning["max_units_per_lot"] < self.modeled_unit_capacity()) and (self.zoning["max_units_per_lot"] >= 3):
-            return self.zoning["max_units_per_lot"]
-        elif (self.zoning["max_units_per_lot"] < self.modeled_unit_capacity()) and (self.zoning["max_units_per_lot"] < 3):
+        elif (self.zoning["max_dua"] < self.modeled_unit_capacity()) and (self.zoning["max_dua"] >= 3):
+            return self.zoning["max_dua"]
+        elif (self.zoning["max_dua"] < self.modeled_unit_capacity()) and (self.zoning["max_dua"] < 3):
             return 0
         
         return self.modeled_unit_capacity()
@@ -353,15 +376,32 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
         # Compute the number of steps to display within the progress bar and
         # get features from source
         total = 100.0 / source.featureCount() if source.featureCount() else 0
+        
+        zone_features = zoning_table.getFeatures()
+        zoning = dict()
+        for index, zone_rules in enumerate(zone_features):
+            z = Zone(
+                zone_rules["District"],
+                zone_rules["front setback"],
+                zone_rules["side setback"],
+                zone_rules["rear setback"],
+                zone_rules["height"],
+                zone_rules["stories"],
+                zone_rules["FAR by right"],
+                zone_rules["max lot coverage"],
+                zone_rules["min open space"],
+                zone_rules["lot area"],
+                zone_rules["max DUA"],
+                zone_rules["lot frontage"]
+            )
+            zoning[zone_rules["District"]] = z
+        
         parcels = source.getFeatures()
-        
-        
         for index, parcel in enumerate(parcels):
             # Stop the algorithm if cancel button has been clicked
             if feedback.isCanceled():
                 break
             
-            feedback.pushInfo('LOC_ID is {}'.format(parcel["LOC_ID"]))
             p = Parcel(
                 parcel["LOC_ID"],
                 parcel["TRANSIT"],
@@ -370,11 +410,16 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
                 parcel["PublicInst"],
                 parcel["NonPubExc"],
                 parcel["Tot_Exclud"],
-                parcel["Tot_Sensit"]
+                parcel["Tot_Sensit"],
+                parcel["NAME"]
             )
             
             # TODO: get zone of parcel
+            p.set_zoning(zoning[parcel["NAME"]])
             
+            #feedback.pushInfo('zone is {}'.format(zoning))
+            
+            # run the calculation
             du_per_ac = p.du_per_ac()
 
             # Add a feature in the sink
