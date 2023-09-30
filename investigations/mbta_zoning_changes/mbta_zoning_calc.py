@@ -62,11 +62,12 @@ class Parcel:
         else:
             return (self.excluded_land_pct() + self.open_space_required()) * self.parcel_sf
 
-    # NOTE: this is from another sheet
-    # TODO: double check these
+    # NOTE: this is from another sheet (Formula Matrix) which seems to have
+    # two definitions of how to determine the ratio. I'm basing this formula
+    # off of what actually ends up in the sheet, and not the text description
     def model_parking_ratio(self):
 
-        district_parking_ratio = self.zoning["district_parking_ratio"]
+        district_parking_ratio = self.zoning.get("district_parking_ratio", 0)
 
         if district_parking_ratio == 0:
             return 0
