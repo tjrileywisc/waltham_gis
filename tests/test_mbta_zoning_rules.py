@@ -202,7 +202,7 @@ def test_modeled_unit_capacity():
     assert pytest.approx(0.0) == calc.modeled_unit_capacity()
 
 
-def test_modeled_unit_capacity():
+def test_du_per_ac():
 
     parcel = Parcel(
         "LOC_ID",
