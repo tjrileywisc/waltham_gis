@@ -8,31 +8,14 @@ from qgis.core import (QgsProcessing,
                        QgsProcessingParameterFeatureSource,
                        QgsProcessingParameterFeatureSink)
 from qgis import processing
+import sys
+
+sys.path.insert(0, r"C:\workspace\waltham_gis")
+from waltham.zone import Zone
 
 
 SQ_FT_IN_ACRE = 43560
-# the parking minimum is effectively 2 everywhere for all housing types
-PARKING_MINIMUM = 2
 
-
-class Zone(dict):
-    def __init__(self, name, front_setback, side_setback, rear_setback, height, stories, far, max_lot_coverage, min_open_space, lot_area, max_dua, lot_frontage):
-        self.name = name
-        self.front_setback = front_setback
-        self.side_setback = side_setback
-        self.rear_setback = rear_setback
-        self.height = height
-        self.stories = stories
-        self.far = far
-        self.max_lot_coverage = max_lot_coverage
-        self.min_open_space = min_open_space
-        self.lot_area = lot_area
-        self.max_dua = max_dua
-        self.lot_frontage = lot_frontage
-        
-        self.district_parking_ratio = PARKING_MINIMUM
-
-        
 
 class Parcel:
     def __init__(self, loc_id, transit_station, parcel_acres, parcel_sf, excluded_public, excluded_non_public, total_excluded_land, total_sensitive_land, zone, feedback):
