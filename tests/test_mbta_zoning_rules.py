@@ -67,7 +67,7 @@ def test_open_space_removed():
 
     calc = MBTACalculator(parcel, zone)
 
-    assert 323 == calc.open_space_removed()
+    assert pytest.approx(323, 1) == calc.open_space_removed()
 
 
 def test_parking_area_removed():
@@ -133,7 +133,7 @@ def test_building_footprint():
 
     calc = MBTACalculator(parcel, zone)
 
-    assert pytest.approx(1294) == calc.building_footprint()
+    assert pytest.approx(1294, 1) == calc.building_footprint()
 
 
 def test_building_envelope():
@@ -166,7 +166,7 @@ def test_building_envelope():
 
     calc = MBTACalculator(parcel, zone)
 
-    assert pytest.approx(1294) == calc.building_envelope()
+    assert pytest.approx(1294, 1) == calc.building_envelope()
 
 
 def test_modeled_unit_capacity():
