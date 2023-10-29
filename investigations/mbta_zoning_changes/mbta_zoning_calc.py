@@ -14,7 +14,8 @@ SQ_FT_IN_ACRE = 43560
 # the parking minimum is effectively 2 everywhere for all housing types
 PARKING_MINIMUM = 2
 
-class Zone:
+
+class Zone(dict):
     def __init__(self, name, front_setback, side_setback, rear_setback, height, stories, far, max_lot_coverage, min_open_space, lot_area, max_dua, lot_frontage):
         self.name = name
         self.front_setback = front_setback
@@ -34,7 +35,7 @@ class Zone:
         
 
 class Parcel:
-    def __init__(self, loc_id, transit_station, parcel_acres, parcel_sf, excluded_public, excluded_non_public, total_excluded_land, total_sensitive_land, zone):
+    def __init__(self, loc_id, transit_station, parcel_acres, parcel_sf, excluded_public, excluded_non_public, total_excluded_land, total_sensitive_land, zone, feedback):
        self.loc_id = loc_id
        # ignore irrelevant freetext fields
        self.transit_station = transit_station
@@ -45,6 +46,7 @@ class Parcel:
        self.total_excluded_land = total_excluded_land
        self.total_sensitive_land = total_sensitive_land
        self.zone = zone
+       self.feedback = feedback
        
     def set_zoning(self, zoning):
         self.zoning = zoning
@@ -53,10 +55,10 @@ class Parcel:
     # col N
     def developable_parcel_sf(self):
 
-        if self.parcel_sf < self.zoning["min_parcel_size"]:
+        if self.parcel_sf < self.zoning.get("min_parcel_size", 0):
             return 0
         
-        return max(self.parcel_sf - self.total_excluded_size, 0)
+        return max(self.parcel_sf - self.total_excluded_land, 0)
 
     # col Q
     # NOTE: we're not applying any overrides
@@ -73,15 +75,20 @@ class Parcel:
     # col S
     # NOTE: this 0.2 appears to be hardcoded, is it in the law?
     def open_space_required(self):
-
-        return max(0.2, self.zoning["min_open_space"])
+        
+        if self.zoning.get("min_open_space"):
+            return max(0.2, self.zoning["min_open_space"])
+        return 0.2
 
     # col T
     # NOTE: we're not applying any overrides
     def open_space_removed(self):
 
-        if self.zoning["allows_restricted_areas"]:
-            return max(self.excluded_land_pct(), self.open_space_required()) * self.parcel_sf
+        # TODO: is this buried deeper in the code?
+        if self.zoning.get("allows_restricted_areas"):
+            # NOTE: same problems with None here as 'min' in another place
+            params = [p for p in [self.excluded_land_pct(), self.open_space_required()] if p is not None]
+            return max(params) * self.parcel_sf
         else:
             return (self.excluded_land_pct() + self.open_space_required()) * self.parcel_sf
 
@@ -208,10 +215,28 @@ class Parcel:
 
     # col AF
     def final_lot_mf_unit_capacity(self):
+        
+        # NOTE:
+        # having trouble here with None values,
+        # which I think would have ended up as empty
+        # strings in the spreadsheet. does the 'min' function
+        # in there just ignore those? the python 'min' doesn't
+        # like comparisons with None.
+        params = [
+            p for p in [
+                self.modeled_unit_capacity(),
+                self.dwelling_units_per_acre_limit(),
+                self.modeled_unit_capacity(),
+                self.max_lot_coverage_limit(),
+                self.lot_area_per_dwelling_limit(),
+                self.far_limit(),
+                self.max_units_per_lot_limit()
+            ] if p is not None
+        ]
 
         min_constraints = min(
-            self.modeled_unit_capacity(), self.dwelling_units_per_acre_limit(), 
-            self.max_lot_coverage_limit(), self.lot_area_per_dwelling_limit(), self.far_limit(), self.max_units_per_lot_limit()) 
+            params
+        )
 
         if min_constraints < 2.5:
             return 0
@@ -364,7 +389,7 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
         )
 
         # Send some information to the user
-        feedback.pushInfo('CRS is {}'.format(source.sourceCrs().authid()))
+        #feedback.pushInfo('CRS is {}'.format(source.sourceCrs().authid()))
 
         # If sink was not created, throw an exception to indicate that the algorithm
         # encountered a fatal error. The exception text can be any string, but in this
@@ -380,21 +405,54 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
         zone_features = zoning_table.getFeatures()
         zoning = dict()
         for index, zone_rules in enumerate(zone_features):
+            
+            far = zone_rules["FAR by right"]
+            if far != "":
+                far = float(far)
+            else:
+                far = None
+        
+            max_lot_coverage = zone_rules["max lot coverage"]
+            if max_lot_coverage != "":
+                max_lot_coverage = float(max_lot_coverage)
+            else:
+                max_lot_coverage = None
+            
+            min_open_space = zone_rules["min open space"]
+            if min_open_space != "":
+                min_open_space = float(min_open_space)
+            else:
+                min_open_space = None
+                
+            lot_area = zone_rules["lot area"]
+            if lot_area != "":
+                lot_area = int(lot_area)
+            else:
+                lot_area = None
+            
+            max_dua = zone_rules["max DUA"]
+            if max_dua != "":
+                max_dua = int(max_dua)
+            else:
+                max_dua = None
+            
+            
             z = Zone(
                 zone_rules["District"],
-                zone_rules["front setback"],
-                zone_rules["side setback"],
-                zone_rules["rear setback"],
-                zone_rules["height"],
-                zone_rules["stories"],
-                zone_rules["FAR by right"],
-                zone_rules["max lot coverage"],
-                zone_rules["min open space"],
-                zone_rules["lot area"],
-                zone_rules["max DUA"],
-                zone_rules["lot frontage"]
+                int(zone_rules["front setback"]),
+                int(zone_rules["side setback"]),
+                int(zone_rules["rear setback"]),
+                int(zone_rules["height"]),
+                float(zone_rules["stories"]),
+                far,
+                max_lot_coverage,
+                min_open_space,
+                lot_area,
+                max_dua,
+                int(zone_rules["lot frontage"])
             )
             zoning[zone_rules["District"]] = z
+
         
         parcels = source.getFeatures()
         for index, parcel in enumerate(parcels):
@@ -411,16 +469,20 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
                 parcel["NonPubExc"],
                 parcel["Tot_Exclud"],
                 parcel["Tot_Sensit"],
-                parcel["NAME"]
+                parcel["NAME"],
+                feedback
             )
             
             # TODO: get zone of parcel
-            p.set_zoning(zoning[parcel["NAME"]])
+            p.set_zoning(vars(zoning[parcel["NAME"]]))
+            
+            #feedback.pushInfo("{}".format(p.zoning))
             
             #feedback.pushInfo('zone is {}'.format(zoning))
             
             # run the calculation
             du_per_ac = p.du_per_ac()
+            feedback.pushInfo("{}".format(du_per_ac))
 
             # Add a feature in the sink
             #sink.addFeature(parcel, QgsFeatureSink.FastInsert)

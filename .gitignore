@@ -3,6 +3,7 @@
 *.venv
 .pdm.toml
 __pycache__
+.pdm-python
 
 # data ignores
 data/
