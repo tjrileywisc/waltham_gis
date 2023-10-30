@@ -103,6 +103,10 @@ def test_parking_area_removed():
 
     assert 0 == calc.parking_area_removed()
 
+    # what if we didn't have parking near transit?
+    calc = MBTACalculator(parcel, zone, True)
+    assert 0 == calc.parking_area_removed()
+
     # uses default parking ratio of 2.0
     # for waltham
     zone = Zone(
@@ -121,7 +125,11 @@ def test_parking_area_removed():
     )
 
     calc = MBTACalculator(parcel, zone)
+    assert pytest.approx(841, 1) == calc.parking_area_removed()
 
+    # same in this case
+    parcel.transit_station = "N"
+    calc = MBTACalculator(parcel, zone, True)
     assert pytest.approx(841, 1) == calc.parking_area_removed()
 
 
@@ -223,6 +231,7 @@ def test_modeled_unit_capacity():
 
     assert pytest.approx(0.0) == calc.modeled_unit_capacity()
 
+
 def test_final_lot_mf_unit_capacity():
 
     parcel = Parcel(
@@ -254,7 +263,7 @@ def test_final_lot_mf_unit_capacity():
     calc = MBTACalculator(parcel, zone)
 
     assert pytest.approx(0.0) == calc.final_lot_mf_unit_capacity()
-    
+
     parcel = Parcel(
         "LOC_ID",
         "Y",
@@ -265,7 +274,7 @@ def test_final_lot_mf_unit_capacity():
         0,
         0
     )
-    
+
     zone = Zone(
         "C",
         40,
@@ -284,6 +293,7 @@ def test_final_lot_mf_unit_capacity():
     calc = MBTACalculator(parcel, zone)
 
     assert pytest.approx(3, 1) == calc.final_lot_mf_unit_capacity()
+
 
 def test_du_per_ac():
 

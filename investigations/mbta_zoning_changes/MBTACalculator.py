@@ -16,9 +16,10 @@ SQ_FT_IN_ACRE = 43560
 
 class MBTACalculator:
 
-    def __init__(self, parcel, zone):
+    def __init__(self, parcel, zone, rm_transit_parking_minimums=False):
         self.parcel = parcel
         self.zoning = zone
+        self.rm_transit_parking_minimums = rm_transit_parking_minimums
 
     # functions from district tabs
     # col N
@@ -67,6 +68,10 @@ class MBTACalculator:
     def model_parking_ratio(self):
 
         district_parking_ratio = self.zoning.get("district_parking_ratio", 0)
+
+        # Healey has suggested no parking mandates near transit
+        if self.rm_transit_parking_minimums and self.parcel.transit_station == "Y":
+            return 0
 
         if district_parking_ratio == 0:
             return 0
