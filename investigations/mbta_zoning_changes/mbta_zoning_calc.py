@@ -1,7 +1,10 @@
 
 
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication, QVariant
 from qgis.core import (QgsProcessing,
+                       QgsField,
+                       QgsFields,
+                       QgsFeature,
                        QgsFeatureSink,
                        QgsProcessingException,
                        QgsProcessingAlgorithm,
@@ -142,15 +145,6 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
         if source is None:
             raise QgsProcessingException(self.invalidSourceError(parameters, self.INPUT))
 
-        (sink, dest_id) = self.parameterAsSink(
-            parameters,
-            self.OUTPUT,
-            context,
-            source.fields(),
-            source.wkbType(),
-            source.sourceCrs()
-        )
-
         # Send some information to the user
         #feedback.pushInfo('CRS is {}'.format(source.sourceCrs().authid()))
 
@@ -158,6 +152,21 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
         # encountered a fatal error. The exception text can be any string, but in this
         # case we use the pre-built invalidSinkError method to return a standard
         # helper text for when a sink cannot be evaluated
+        
+        out_fields = QgsFields()
+        out_fields.extend(source.fields())
+        out_fields.append(QgsField('NEW_CAPACITY', QVariant.Double))
+        out_fields.append(QgsField('DU_PER_AC', QVariant.Double))
+            
+        (sink, dest_id) = self.parameterAsSink(
+            parameters,
+            self.OUTPUT,
+            context,
+            out_fields,
+            source.wkbType(),
+            source.sourceCrs()
+        )
+
         if sink is None:
             raise QgsProcessingException(self.invalidSinkError(parameters, self.OUTPUT))
 
@@ -214,12 +223,16 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
                 int(zone_rules["lot frontage"])
             )
             zoning[zone_rules["District"]] = z
+            
+
 
         parcels = source.getFeatures()
         for index, parcel in enumerate(parcels):
             # Stop the algorithm if cancel button has been clicked
             if feedback.isCanceled():
                 break
+
+            attributes = parcel.attributes()
             
             p = Parcel(
                 parcel["LOC_ID"],
@@ -236,17 +249,22 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
             p.set_zoning(vars(zoning[parcel["NAME"]]))
             
             calc = MBTACalculator(p, vars(zoning[parcel["NAME"]]))
-            
-            #feedback.pushInfo("{}".format(p.zoning))
-            
-            #feedback.pushInfo('zone is {}'.format(zoning))
-            
+
             # run the calculation
+            new_capacity = calc.final_lot_mf_unit_capacity()
             du_per_ac = calc.du_per_ac()
-            #feedback.pushInfo("{}".format(du_per_ac))
+
+            # add new data (need to keep the order the same!)
+            attributes.append(new_capacity)
+            attributes.append(du_per_ac)
+
+            updated_parcel = QgsFeature()
+            updated_parcel.setFields(out_fields)
+            updated_parcel.setGeometry(parcel.geometry())
+            updated_parcel.setAttributes(attributes)
 
             # Add a feature in the sink
-            #sink.addFeature(parcel, QgsFeatureSink.FastInsert)
+            sink.addFeature(updated_parcel, QgsFeatureSink.FastInsert)
 
             # Update the progress bar
             feedback.setProgress(int(index * total))
