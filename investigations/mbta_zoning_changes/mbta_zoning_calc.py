@@ -9,6 +9,7 @@ from qgis.core import (QgsProcessing,
                        QgsProcessingException,
                        QgsProcessingAlgorithm,
                        QgsProcessingParameterFeatureSource,
+                       QgsProcessingParameterBoolean,
                        QgsProcessingParameterFeatureSink)
 from qgis import processing
 
@@ -31,6 +32,7 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
 
     INPUT = 'INPUT'
     ZONING_TABLE = 'ZONING_TABLE'
+    RM_PARKING_NEAR_TRANSIT = 'RM_PARKING_NEAR_TRANSIT'
     OUTPUT = 'OUTPUT'
 
     def tr(self, string):
@@ -98,7 +100,7 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
                 [QgsProcessing.TypeVectorAnyGeometry]
             )
         )
-        
+
         # a csv file that has the lookup for zoning params
         self.addParameter(
             QgsProcessingParameterFeatureSource(
@@ -108,9 +110,17 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
             )
         )
 
-        # We add a feature sink in which to store our processed features (this
-        # usually takes the form of a newly created vector layer when the
-        # algorithm is run in QGIS).
+        # optionally clobber any set parking mins
+        # near transit (Healey proposal)
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.RM_PARKING_NEAR_TRANSIT,
+                "Remove parking minimums near transit?",
+                False
+            )
+        )
+
+        # processed features
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 self.OUTPUT,
@@ -131,10 +141,16 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
             self.INPUT,
             context
         )
-        
+
         zoning_table = self.parameterAsSource(
             parameters,
             self.ZONING_TABLE,
+            context
+        )
+
+        rm_parking_near_transit = self.parameterAsBoolean(
+            parameters,
+            self.RM_PARKING_NEAR_TRANSIT,
             context
         )
 
@@ -222,9 +238,8 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
                 max_dua,
                 int(zone_rules["lot frontage"])
             )
-            zoning[zone_rules["District"]] = z
-            
 
+            zoning[zone_rules["District"]] = z
 
         parcels = source.getFeatures()
         for index, parcel in enumerate(parcels):
@@ -233,7 +248,7 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
                 break
 
             attributes = parcel.attributes()
-            
+
             p = Parcel(
                 parcel["LOC_ID"],
                 parcel["TRANSIT"],
@@ -246,9 +261,13 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
                 parcel["NAME"]
             )
 
-            p.set_zoning(vars(zoning[parcel["NAME"]]))
-            
-            calc = MBTACalculator(p, vars(zoning[parcel["NAME"]]))
+            p.set_zoning(zoning[parcel["NAME"]])
+
+            calc = MBTACalculator(
+                p,
+                zoning[parcel["NAME"]],
+                rm_parking_near_transit
+            )
 
             # run the calculation
             new_capacity = calc.final_lot_mf_unit_capacity()
