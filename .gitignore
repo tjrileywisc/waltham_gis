@@ -4,6 +4,7 @@
 .pdm.toml
 __pycache__
 .pdm-python
+.pytest_cache
 
 # data ignores
 data/
