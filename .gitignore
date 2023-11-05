@@ -7,7 +7,9 @@ __pycache__
 .pytest_cache
 
 # data ignores
-data/
+data/Buildings
+data/gis
+data/mbta_communities
 
 # exceptions (for tiny files)
 !data/zoning_rules_table.csv
