@@ -8,3 +8,6 @@ __pycache__
 
 # data ignores
 data/
+
+# exceptions (for tiny files)
+!data/zoning_rules_table.csv
