@@ -2,6 +2,7 @@
 import pytest
 from waltham.zone import Zone
 from waltham.parcel import Parcel
+from waltham.parcel_to_zone import read_zoning_csv, make_zones
 
 from investigations.mbta_zoning_changes.MBTACalculator import MBTACalculator
 
@@ -357,4 +358,25 @@ def test_du_per_ac():
 
     assert pytest.approx(33, 1) == calc.du_per_ac()
 
+def test_du_per_ac_dua_limit():
+    # parcel in zone with DUA limit
+    zoning = make_zones(read_zoning_csv())
+    parcel = Parcel(
+        "LOC_ID",
+        "Y",
+        0.14271056418,
+        6216.47217553,
+        0,
+        1220.23970714,
+        1172.04257265,
+        0,
+        "BB"
+    )
 
+    zone = zoning[parcel.zoning]
+
+    assert zone["name"] == "BB"
+    
+    calc = MBTACalculator(parcel, zone)
+
+    assert pytest.approx(33, 1) == calc.du_per_ac()
