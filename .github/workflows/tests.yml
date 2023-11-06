@@ -26,5 +26,5 @@ jobs:
         
       - name: run tests
         run: |
-          ./.venv/Scripts/activate
+          ./.venv/bin/activate
           python -m pytest
