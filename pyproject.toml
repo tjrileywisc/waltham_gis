@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "geopandas>=0.12.2",
-    "dvc>=2.45.1",
+    "dvc>=2.56.0",
     "jupyter>=1.0.0",
     "tqdm>=4.64.1",
     "seaborn>=0.12.2",
