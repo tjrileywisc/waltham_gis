@@ -8,11 +8,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      # You can test your matrix by printing the current Python version
+
+      - uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: 3.11
+          cache: true
+
       - name: install packages
         run: |
           pip install pdm
@@ -20,5 +26,5 @@ jobs:
         
       - name: run tests
         run: |
-          pdm venv activate
+          ./.venv/Scripts/activate
           python -m pytest
