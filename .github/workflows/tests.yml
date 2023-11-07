@@ -1,0 +1,30 @@
+name: Python package
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: 3.11
+          cache: true
+
+      - name: install packages
+        run: |
+          pip install pdm
+          pdm install
+        
+      - name: run tests
+        run: |
+          source .venv/bin/activate
+          python -m pytest
