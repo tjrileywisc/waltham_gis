@@ -1,4 +1,5 @@
 outs:
-- md5: 19b51276b7d9850ab07469c33ac40043
+- md5: 8224fe8754f933116e615f88e4d878c1
   size: 1447451
-  path: data/likely_homeowners.csv
+  path: likely_homeowners.csv
+  hash: md5
