@@ -3,6 +3,8 @@
 *.venv
 .pdm.toml
 __pycache__
+.pdm-python
 
 # data ignores
-data/
+!data/likely_homeowners.csv.dvc
+data
