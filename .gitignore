@@ -7,4 +7,6 @@ __pycache__
 
 # data ignores
 !data/likely_homeowners.csv.dvc
-data
+data/Buildings
+data/gis
+data/mbta_communities
