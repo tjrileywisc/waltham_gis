@@ -14,8 +14,10 @@ from qgis.core import (QgsProcessing,
 from qgis import processing
 
 import sys
+import os
+import pathlib
 # in qgis itself we might need to do this
-sys.path.insert(0, r"C:\workspace\waltham_gis")
+sys.path.append(pathlib.Path(os.getcwd()).parent.parent.as_posix())
 from waltham.zone import Zone
 from waltham.parcel import Parcel
 from waltham.parcel_to_zone import make_zones

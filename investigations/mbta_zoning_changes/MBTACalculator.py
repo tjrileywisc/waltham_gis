@@ -1,6 +1,5 @@
 
 
-import sys
 
 try:
     from ...waltham.zone import Zone
@@ -8,7 +7,10 @@ try:
     from ...waltham.constants import SQ_FT_PER_ACRE
 except ImportError:
     # in qgis itself we might need to do this
-    sys.path.insert(0, r"C:\workspace\waltham_gis")
+    import sys
+    import pathlib
+    import os
+    sys.path.append(pathlib.Path(os.getcwd()).parent.parent.as_posix())
     from waltham.zone import Zone
     from waltham.parcel import Parcel
     from waltham.constants import SQ_FT_PER_ACRE
