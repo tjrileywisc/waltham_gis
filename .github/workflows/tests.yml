@@ -24,7 +24,7 @@ jobs:
       - name: install packages
         run: |
           pip install pdm
-          pdm install
+          pdm install --no-lock -v
         
       - name: run tests
         run: |
