@@ -3,6 +3,7 @@ import pytest
 from waltham.zone import Zone
 from waltham.parcel import Parcel
 from waltham.parcel_to_zone import read_zoning_csv, make_zones
+from waltham.constants import SQ_FT_PER_ACRE
 
 from investigations.mbta_zoning_changes.MBTACalculator import MBTACalculator
 

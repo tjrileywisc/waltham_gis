@@ -1,18 +1,19 @@
 
 
-import sys
 
 try:
     from ...waltham.zone import Zone
     from ...waltham.parcel import Parcel
+    from ...waltham.constants import SQ_FT_PER_ACRE
 except ImportError:
     # in qgis itself we might need to do this
-    sys.path.insert(0, r"C:\workspace\waltham_gis")
+    import sys
+    import pathlib
+    import os
+    sys.path.append(pathlib.Path(os.getcwd()).parent.parent.as_posix())
     from waltham.zone import Zone
     from waltham.parcel import Parcel
-
-SQ_FT_IN_ACRE = 43560
-
+    from waltham.constants import SQ_FT_PER_ACRE
 
 class MBTACalculator:
 
@@ -125,7 +126,7 @@ class MBTACalculator:
     def dwelling_units_per_acre_limit(self):
 
         if self.zoning.get("max_dua"):
-            return (self.parcel.parcel_sf / SQ_FT_IN_ACRE) * self.zoning.get("max_dua")
+            return (self.parcel.parcel_sf / SQ_FT_PER_ACRE) * self.zoning.get("max_dua")
         
         return None
 
@@ -224,4 +225,4 @@ class MBTACalculator:
         The final calculation of dwelling units per acre on the parcel
         """
 
-        return SQ_FT_IN_ACRE * self.final_lot_mf_unit_capacity() / self.parcel.parcel_sf
+        return SQ_FT_PER_ACRE * self.final_lot_mf_unit_capacity() / self.parcel.parcel_sf
