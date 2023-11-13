@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:dfa259bdefdef69328bc6543c540c09c3ab68a7fe4a260fa85569fbda2a7357a"
+content_hash = "sha256:3279d940f59fe0a15f7056b05022e115149b91dbbad8a9dc9dd2d07efa4440ea"
 
 [[package]]
 name = "absl-py"
@@ -1106,22 +1106,22 @@ files = [
 
 [[package]]
 name = "fsspec"
-version = "2023.9.2"
+version = "2023.9.1"
 requires_python = ">=3.8"
 summary = "File-system specification"
 files = [
-    {file = "fsspec-2023.9.2-py3-none-any.whl", hash = "sha256:603dbc52c75b84da501b9b2ec8c11e1f61c25984c4a0dda1f129ef391fbfc9b4"},
-    {file = "fsspec-2023.9.2.tar.gz", hash = "sha256:80bfb8c70cc27b2178cc62a935ecf242fc6e8c3fb801f9c571fc01b1e715ba7d"},
+    {file = "fsspec-2023.9.1-py3-none-any.whl", hash = "sha256:99a974063b6cced36cfaa61aa8efb05439c6fea2dafe65930e7ab46f9d2f8930"},
+    {file = "fsspec-2023.9.1.tar.gz", hash = "sha256:da8cfe39eeb65aaa69074d5e0e4bbc9b7ef72d69c0587a31cab981eefdb3da13"},
 ]
 
 [[package]]
 name = "fsspec"
-version = "2023.9.2"
+version = "2023.9.1"
 requires_python = ">=3.8"
 summary = "File-system specification"
 files = [
-    {file = "fsspec-2023.9.2-py3-none-any.whl", hash = "sha256:603dbc52c75b84da501b9b2ec8c11e1f61c25984c4a0dda1f129ef391fbfc9b4"},
-    {file = "fsspec-2023.9.2.tar.gz", hash = "sha256:80bfb8c70cc27b2178cc62a935ecf242fc6e8c3fb801f9c571fc01b1e715ba7d"},
+    {file = "fsspec-2023.9.1-py3-none-any.whl", hash = "sha256:99a974063b6cced36cfaa61aa8efb05439c6fea2dafe65930e7ab46f9d2f8930"},
+    {file = "fsspec-2023.9.1.tar.gz", hash = "sha256:da8cfe39eeb65aaa69074d5e0e4bbc9b7ef72d69c0587a31cab981eefdb3da13"},
 ]
 
 [[package]]
