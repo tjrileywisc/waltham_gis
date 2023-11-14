@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:dc03632a37b4b965db1f9860a7f17b54d0095723114fdbb409729662abffe3e1"
+content_hash = "sha256:d06066bce246576fbc9abed5c1e61ee6144385ec9f4e148d35ca3fab9cf992d3"
 
 [[package]]
 name = "absl-py"
@@ -312,6 +312,19 @@ dependencies = [
 files = [
     {file = "bleach-6.1.0-py3-none-any.whl", hash = "sha256:3225f354cfc436b9789c66c4ee030194bee0568fbf9cbdad3bc8b5c26c5f12b6"},
     {file = "bleach-6.1.0.tar.gz", hash = "sha256:0a31f1837963c41d46bbf1331b8778e1308ea0791db03cc4e7357b97cf42a8fe"},
+]
+
+[[package]]
+name = "branca"
+version = "0.7.0"
+requires_python = ">=3.7"
+summary = "Generate complex HTML+JS pages with Python"
+dependencies = [
+    "jinja2",
+]
+files = [
+    {file = "branca-0.7.0-py3-none-any.whl", hash = "sha256:c653d9a3fef1e6cd203757c77d3eb44810f11998506451f9a27d52b983500c16"},
+    {file = "branca-0.7.0.tar.gz", hash = "sha256:503ccb589a9ee9464cb7b5b17e5ffd8d5082c5c28624197f58f20d4d377a68bb"},
 ]
 
 [[package]]
@@ -1042,6 +1055,22 @@ dependencies = [
 files = [
     {file = "flufl.lock-7.1.1-py3-none-any.whl", hash = "sha256:96d2c0448ba9fd8fc65d5d681ed7217c8e1625149c1c880bba50559bb680a615"},
     {file = "flufl.lock-7.1.1.tar.gz", hash = "sha256:af14172b35bbc58687bd06b70d1693fd8d48cbf0ffde7e51a618c148ae24042d"},
+]
+
+[[package]]
+name = "folium"
+version = "0.15.0"
+requires_python = ">=3.7"
+summary = "Make beautiful maps with Leaflet.js & Python"
+dependencies = [
+    "branca>=0.6.0",
+    "jinja2>=2.9",
+    "numpy",
+    "requests",
+]
+files = [
+    {file = "folium-0.15.0-py2.py3-none-any.whl", hash = "sha256:ee59df0a2ea6b958ae0ea0638915457f09711c45bac0e061810b52e7a255c69d"},
+    {file = "folium-0.15.0.tar.gz", hash = "sha256:1be7dbd4a59c7d096194b5e9868402d637f99daaaa0673381deb5d407dc552ce"},
 ]
 
 [[package]]
