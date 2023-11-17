@@ -13,7 +13,10 @@ def calc_local_density(df, indexes):
             continue
 
         neighbors = df[df["centroid"].distance(df.at[idx, "centroid"]) <= radius]
+        
+        # only residential parcels are relevant for this calculation
+        neighbors = neighbors[neighbors["USE_CODE"] < 200]
 
         results.append((idx, neighbors["UNITS"].sum()))
-        
+
     return results
