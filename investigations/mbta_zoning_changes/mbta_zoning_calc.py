@@ -113,8 +113,8 @@ class WalthamUnitCalc(QgsProcessingAlgorithm):
             )
         )
 
-        # optionally clobber any set parking mins
-        # near transit (Healey proposal)
+        # optionally remove any set parking mins
+        # near transit
         self.addParameter(
             QgsProcessingParameterBoolean(
                 self.RM_PARKING_NEAR_TRANSIT,
