@@ -13,8 +13,8 @@ data/Buildings
 data/gis
 data/mbta_communities
 
-# qgis files
-*.qgz
+derived
+html
 
 # exceptions (for tiny files)
 !data/zoning_rules_table.csv
