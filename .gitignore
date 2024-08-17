@@ -16,6 +16,9 @@ data/mbta_communities
 derived
 html
 
+# other
+config.json
+
 # exceptions (for tiny files)
 !data/zoning_rules_table.csv
 !data/likely_homeowners.csv.dvc
