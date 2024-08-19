@@ -7,11 +7,9 @@ authors = [
 ]
 dependencies = [
     "geopandas>=0.12.2",
-    "dvc>=2.56.0",
     "jupyter>=1.0.0",
     "tqdm>=4.64.1",
     "seaborn>=0.12.2",
-    "dvc-gdrive>=2.19.1",
     "dbfread>=2.0.7",
     "ipympl>=0.9.3",
     "mplcursors>=0.5.2",
@@ -20,12 +18,12 @@ dependencies = [
     "pytest>=7.4.3",
     "pycodestyle>=2.11.1",
     # https://github.com/huggingface/datasets/issues/6330
-    "fsspec[http]<2023.6.0",
     "pytest-cov>=4.1.0",
     "folium>=0.15.0",
     "sqlalchemy>=2.0.30",
     "psycopg2>=2.9.9",
     "geoalchemy2>=0.15.2",
+    "scikit-learn>=1.5.1",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
