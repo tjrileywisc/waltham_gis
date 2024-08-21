@@ -5,7 +5,7 @@ from waltham.parcel import Parcel
 from waltham.parcel_to_zone import read_zoning_csv, make_zones
 from waltham.constants import SQ_FT_PER_ACRE
 
-from investigations.mbta_c_current_zoning.MBTACalculator import MBTACalculator
+from MBTA.MBTACalculator import MBTACalculator
 
 
 def test_developable_parcel_sf_no_excluded_land():
