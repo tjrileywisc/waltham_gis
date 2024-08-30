@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:0e7569e52c29dc2be2570b378872f8f0f0105089d5fee8b1fad18cda08a36bcb"
+content_hash = "sha256:efc4aa91467d10cdd38fee0a7f989b9883083f85777fe6752759a40458a173bb"
 
 [[metadata.targets]]
 requires_python = ">=3.11"
@@ -2134,6 +2134,21 @@ groups = ["default"]
 files = [
     {file = "pyparsing-3.1.2-py3-none-any.whl", hash = "sha256:f9db75911801ed778fe61bb643079ff86601aca99fcae6345aa67292038fb742"},
     {file = "pyparsing-3.1.2.tar.gz", hash = "sha256:a1bac0ce561155ecc3ed78ca94d3c9378656ad4c94c1270de543f621420f94ad"},
+]
+
+[[package]]
+name = "pypdf"
+version = "4.3.1"
+requires_python = ">=3.6"
+summary = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
+groups = ["default"]
+dependencies = [
+    "dataclasses; python_version < \"3.7\"",
+    "typing-extensions>=4.0; python_version < \"3.11\"",
+]
+files = [
+    {file = "pypdf-4.3.1-py3-none-any.whl", hash = "sha256:64b31da97eda0771ef22edb1bfecd5deee4b72c3d1736b7df2689805076d6418"},
+    {file = "pypdf-4.3.1.tar.gz", hash = "sha256:b2f37fe9a3030aa97ca86067a56ba3f9d3565f9a791b305c7355d8392c30d91b"},
 ]
 
 [[package]]
