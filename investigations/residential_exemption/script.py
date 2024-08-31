@@ -7,7 +7,18 @@ from data.connect_db import get_db
 from tqdm import tqdm
 
 con = get_db()
-query = "select \"PROP_ID\" from \"M308Assess_CY22_FY23\" limit 10"
+query = """
+    select
+        id,
+        \"PROP_ID\",
+        \"USE_CODE\"
+    from 
+        \"M308Assess_CY22_FY23\"
+    where
+        \"USE_CODE\" like any(array['102', '103', '104'])
+    limit
+        10
+"""
 
 assess_df = pd.read_sql(query, con)
 
