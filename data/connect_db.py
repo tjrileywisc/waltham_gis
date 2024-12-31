@@ -10,7 +10,7 @@ def get_db() -> Engine:
     username = config["username"]
     password = config["password"]
 
-    url = f"postgresql://{username}:{password}@127.0.0.1:5432/walthamdata"
+    url = f"postgresql+psycopg://{username}:{password}@127.0.0.1:5432/walthamdata"
 
     con = create_engine(url)
 
