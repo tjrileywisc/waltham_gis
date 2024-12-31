@@ -6,6 +6,7 @@ authors = [
     {name = "Timothy Riley", email = "timothyjohnriley@gmail.com"},
 ]
 dependencies = [
+    "pywin32==308",     
     "geopandas>=0.12.2",
     "jupyter>=1.0.0",
     "tqdm>=4.64.1",
@@ -14,18 +15,20 @@ dependencies = [
     "ipympl>=0.9.3",
     "mplcursors>=0.5.2",
     "openpyxl>=3.1.2",
-    "ortools>=9.5.2237",
     "pytest>=7.4.3",
     "pycodestyle>=2.11.1",
     # https://github.com/huggingface/datasets/issues/6330
     "pytest-cov>=4.1.0",
     "folium>=0.15.0",
     "sqlalchemy>=2.0.30",
-    "psycopg2>=2.9.9",
     "geoalchemy2>=0.15.2",
     "scikit-learn>=1.5.1",
+    "psycopg[binary,pool]>=3.2.3",
 ]
-requires-python = ">=3.11"
+requires-python = "==3.13.*"
+readme = "README.md"
 license = {text = "MIT"}
 
+
 [tool.pdm]
+distribution = false
