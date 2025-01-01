@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:6216b98827af5bb863cce8a80bbebfc58be8f2a4c6b2c600ae842f426ff0c94d"
+content_hash = "sha256:b4e4755279ffaa4a8d31e3a3d535d362d2f2dc321470d43f2e1673d50f0454a0"
 
 [[metadata.targets]]
 requires_python = "==3.13.*"
@@ -1785,6 +1785,7 @@ name = "pywin32"
 version = "308"
 summary = "Python for Window Extensions"
 groups = ["default"]
+marker = "sys_platform == \"win32\" and platform_python_implementation != \"PyPy\" or platform_system == \"Windows\""
 files = [
     {file = "pywin32-308-cp313-cp313-win32.whl", hash = "sha256:1c44539a37a5b7b21d02ab34e6a4d314e0788f1690d65b48e9b0b89f31abbbed"},
     {file = "pywin32-308-cp313-cp313-win_amd64.whl", hash = "sha256:fd380990e792eaf6827fcb7e187b2b4b1cede0585e3d0c9e84201ec27b9905e4"},
