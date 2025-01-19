@@ -21,7 +21,7 @@ sys.path.append(pathlib.Path(os.getcwd()).parent.parent.as_posix())
 from waltham.zone import Zone
 from waltham.parcel import Parcel
 from waltham.parcel_to_zone import make_zones
-from investigations.mbta_c_current_zoning.MBTACalculator import MBTACalculator
+from MBTA.MBTACalculator import MBTACalculator
 
 class WalthamUnitCalc(QgsProcessingAlgorithm):
     """
