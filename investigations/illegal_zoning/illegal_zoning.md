@@ -57,7 +57,7 @@ long time residents and elderly people trying to downsize if housing isn't made 
 
 ## The map of violations in Waltham
 
-You can view a map of violations that I've generated for Waltham [here](https://drive.google.com/file/d/1WhrWtpJ3YKoxssDta_cS1ur-FVMmeBTV/view?usp=sharing). There's a search tool (which isn't amazing, I'll admit), but you can mouseover parcels to see how they're violating one or more zoning constraints.
+You can view a map of violations that I've generated for Waltham [here](https://drive.google.com/file/d/1WhrWtpJ3YKoxssDta_cS1ur-FVMmeBTV/view?usp=sharing). You'll have to download the .html file and run it in your browser. There's a search tool (which isn't amazing, I'll admit), but you can mouseover parcels to see how they're violating one or more zoning constraints.
 
 ![example violation](interactive_map.png "one of many violations")
 
