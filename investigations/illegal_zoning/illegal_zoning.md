@@ -13,19 +13,21 @@ units per area.
 
 Using maps available from MassGIS and our zoning code, I have done an [analysis](https://github.com/tjrileywisc/waltham_gis/investigations/illegal_zoning/illegal_zoning.ipynb) of _some_ of the restrictions applied to residentially zoned parcels in Waltham.
 
-The biggest one - lot coverage is too high (21% compliant)
+The biggest one - lot size smaller than zone's minimum (52% compliant)
 
-Lot size smaller than zone's minimum (52% compliant)
+Lot coverage is too high (80% compliant)
 
-Too many units per acre (95% compliant)
+Density too high, or residence type is forbidden (87% compliant)
 
 Building is too tall (98% compliant)
 
 FAR is too high (90% compliant)
 
-Totally, ~16% of parcels are compliant.
+Totally, ~39% of parcels are compliant. If you check against units though (i.e. the number of units in compliant parcels), it's **only 28%**.
 
 ## NIMBYs don't even respect the character of their own city
+
+![illegal homes](old_homes_are_illegal.png "homes built before 1960 are largely illegal")
 
 If one was truly concerned about the character of their city, they wouldn't cause such a large percentage of their existing structures to be non-replacable. The whole goal of community
 preservation is supposedly to only allow more of the same structures to be built. That's clearly impossible in much of the city with these zoning rules,
