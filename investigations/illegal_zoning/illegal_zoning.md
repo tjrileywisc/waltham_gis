@@ -11,7 +11,7 @@ Over the course of decades, Waltham has tightend zoning restrictions on resident
 Floor Area Ratios (FAR) to reduce building massing, limiting the built up area (this is similar to FAR), adding setbacks to buildings, adding minimum parking mandates, and limiting the number of dwelling
 units per area.
 
-Using maps available from MassGIS and our zoning code, I have done an [analysis](https://github.com/tjrileywisc/waltham_gis/investigations/illegal_zoning/illegal_zoning.ipynb) of _some_ of the restrictions applied to residentially zoned parcels in Waltham.
+Using maps available from MassGIS and our zoning code, I have done an [analysis](https://github.com/tjrileywisc/waltham_gis/blob/main/investigations/illegal_zoning/illegal_zoning.ipynb) of _some_ of the restrictions applied to residentially zoned parcels in Waltham.
 
 The biggest one - lot size smaller than zone's minimum (52% compliant)
 
@@ -59,7 +59,7 @@ long time residents and elderly people trying to downsize if housing isn't made 
 
 ## The map of violations in Waltham
 
-You can view a map of violations that I've generated for Waltham [here](https://drive.google.com/file/d/1WhrWtpJ3YKoxssDta_cS1ur-FVMmeBTV/view?usp=sharing). You'll have to download the .html file and run it in your browser. There's a search tool (which isn't amazing, I'll admit), but you can mouseover parcels to see how they're violating one or more zoning constraints.
+You can view a map of violations that I've generated for Waltham [here](https://drive.google.com/uc?export=download&id=1WhrWtpJ3YKoxssDta_cS1ur-FVMmeBTV). You'll have to download the .html file and run it in your browser. There's a search tool for the address (which isn't amazing, I'll admit), but you can mouseover parcels to see how they're violating one or more zoning constraints.
 
 ![example violation](interactive_map.png "one of many violations")
 
