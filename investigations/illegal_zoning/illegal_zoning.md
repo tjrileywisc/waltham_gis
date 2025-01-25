@@ -8,8 +8,7 @@ today. **This is raising your cost of living**.
 ## What's wrong?
 
 Over the course of decades, Waltham has tightend zoning restrictions on residential housing by requiring larger minimum lot sizes, limiting the height (and/or number of stories) of buildings, lowering
-Floor Area Ratios (FAR) to reduce building massing, limiting the built up area (this is similar to FAR), adding setbacks to buildings, adding minimum parking mandates, and limiting the number of dwelling
-units per area.
+[Floor Area Ratios](https://en.wikipedia.org/wiki/Floor_area_ratio) (FAR) to reduce building massing, limiting the lot coverage, adding setbacks to buildings, adding minimum parking mandates, and limiting the number of dwelling units per area.
 
 Using maps available from MassGIS and our zoning code, I have done an [analysis](https://github.com/tjrileywisc/waltham_gis/blob/main/investigations/illegal_zoning/illegal_zoning.ipynb) of _some_ of the restrictions applied to residentially zoned parcels in Waltham.
 
@@ -63,6 +62,12 @@ You can view a map of violations that I've generated for Waltham [here](https://
 
 ![example violation](interactive_map.png "one of many violations")
 
+## Why bring this up now?
+
+We're going to be going through _some sort_ of Comprehensive Zoning Review soon. The city has [hired consultants](https://www.city.waltham.ma.us/sites/g/files/vyhlif12301/f/pages/planning_consultant_for_zoning_update_rfp_final_2024.pdf) (link to RFP pdf) to carry out this process. As I understand it, this review was the outcome of the Master Plan Commitee and those discussion sessions we had a few years back.
+
+Hopefully we can correct some of the nonsense described above and reduce barriers to housing production.
+
 ## Sources
 
 Much of the data is available on MassGIS, specifically from [the property tax parcels page](https://www.mass.gov/info-details/massgis-data-property-tax-parcels).
@@ -74,7 +79,8 @@ If you'd like to know more, I can recommend two recent books:
 - Excluded, by Richard Kahlenberg - this one goes into a lot of detail and even compares zoning situations in neighboring communities. You'll never guess how absurdly high Weston's minimum lot size is!
 It's probably twice what you think it is!
 
-- Arbitrary Lines, by M. Nolan Gray - an easy read that goes into how thoroughly cooked zoning is generally, and suggests alternatives which can relieve the housing crisis, while promoting fairness and economic growth at the same time.
+- Arbitrary Lines, by M. Nolan Gray - an easy read that goes into how thoroughly cooked zoning is generally, and suggests alternatives which can relieve the housing crisis, while promoting fairness and economic growth at the same time. I thought the section about Houston's deed restrictions as an alternative to zoning might be worth learning more about (the short version is that you only allow NIMBYs
+to control their local area instead of the whole community).
 
 By the way, I'm doing this analysis [in my github repo](https://github.com/tjrileywisc/waltham_gis) using GIS, SQL, and mostly python. It's open for PRs as well. If you understand any of that,
 and are interested in helping to get an accurate view of our city's development situation, please reach out.
