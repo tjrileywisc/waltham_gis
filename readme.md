@@ -24,4 +24,4 @@ available sources such as MassGIS and the US Census.
 
 ### ADU rezoning (2025)
 
-WIP
+* [Pre-2025 rezoning](investigations/adu_rezoning_2025/before_upzoning.ipynb)
