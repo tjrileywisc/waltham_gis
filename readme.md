@@ -16,6 +16,8 @@ available sources such as MassGIS and the US Census.
 
 * [Disrespected local character](investigations/illegal_zoning/illegal_zoning.ipynb)
 
+* [School zoning](investigations/school_capacities/notebook.ipynb)
+
 ### MBTA Communities Act (2024)
 
 * [Pre-MBTAC upzoning](investigations/mbta_communities_act/before_upzoning.ipynb)
