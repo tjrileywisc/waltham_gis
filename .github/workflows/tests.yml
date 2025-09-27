@@ -9,22 +9,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version-file: pyproject.toml
 
-      - uses: pdm-project/setup-pdm@v3
+      - name: install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: 3.13
-          cache: true
+          enable-cache: true
 
-      - name: install packages
-        run: |
-          pip install pdm
-          pdm install --no-lock -v
+      - name: install python and packages
+        run: uv sync --locked --all-extras --dev
         
       - name: run tests
         run: |
