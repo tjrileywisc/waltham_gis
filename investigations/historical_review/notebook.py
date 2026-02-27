@@ -22,13 +22,14 @@ def _():
     import pandas as pd
     import geopandas as gpd
     import datetime
+    import marimo as mo
 
     from data.connect_db import get_db
 
     from waltham.constants import MASSGIS_CRS
 
     conn = get_db()
-    return conn, datetime, gpd, pd
+    return conn, datetime, gpd, mo, pd
 
 
 @app.cell
