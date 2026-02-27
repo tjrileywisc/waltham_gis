@@ -2,10 +2,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 import json
 
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+CONFIG = ROOT / "config.json"
 
 def get_db() -> Engine:
 
-    config = json.load(open("config.json"))
+    config = json.load(open(CONFIG))
 
     username = config["username"]
     password = config["password"]
