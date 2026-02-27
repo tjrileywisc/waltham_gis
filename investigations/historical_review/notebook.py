@@ -28,9 +28,7 @@ def _():
     from waltham.constants import MASSGIS_CRS
 
     conn = get_db()
-
-    COMPARE_YEAR = datetime.date.today().year + 10
-    return COMPARE_YEAR, conn, gpd, pd
+    return conn, datetime, gpd, pd
 
 
 @app.cell
@@ -47,10 +45,7 @@ def _(conn, gpd):
 
 
 @app.cell
-def _(COMPARE_YEAR, conn, pd):
-    # fetch the data
-
-
+def _(conn, pd):
     assess_query = f"""
     select
         "LOC_ID", "PROP_ID", "UNITS", "YEAR_BUILT", "USE_CODE"::integer, "STYLE"
@@ -59,11 +54,6 @@ def _(COMPARE_YEAR, conn, pd):
     """
 
     assess_df = pd.read_sql(assess_query, conn)
-    # assume age is 75, if unknown
-    assess_df["IMPUTED"] = assess_df["YEAR_BUILT"].map(lambda x: x in [float("nan"), 0])
-    assess_df["YEAR_BUILT"] = assess_df["YEAR_BUILT"].replace(0, COMPARE_YEAR - 75)
-    assess_df["YEAR_BUILT"] = assess_df["YEAR_BUILT"].fillna(COMPARE_YEAR - 75)
-    assess_df
     return (assess_df,)
 
 
@@ -74,25 +64,59 @@ def _(assess_df, parcels_df):
 
 
 @app.cell
-def _(COMPARE_YEAR, properties_df):
-    properties_df["HISTORIC"] = (COMPARE_YEAR - properties_df["YEAR_BUILT"]) >= 75
-    properties_df
+def _(datetime, properties_df):
+    # model how much ages into historical status over time, over a generation
+    this_year = datetime.date.today().year
+
+    properties_df["IMPUTED"] = properties_df["YEAR_BUILT"].map(lambda x: x in [float("nan"), 0])
+    residential_criteria = (properties_df["USE_CODE"] < 200) & (properties_df["USE_CODE"].map(lambda x: x not in range(130, 141)))
+
+    trend_data = []
+
+    for COMPARE_YEAR in range(this_year, this_year + 20):
+        # assume age is 75, if unknown
+        properties_df["YEAR_BUILT"] = properties_df["YEAR_BUILT"].replace(0, COMPARE_YEAR - 75)
+        properties_df["YEAR_BUILT"] = properties_df["YEAR_BUILT"].fillna(COMPARE_YEAR - 75)
+
+        properties_df["HISTORIC"] = (COMPARE_YEAR - properties_df["YEAR_BUILT"]) >= 75
+
+        # historic housing
+        properties_df["HISTORIC_RESIDENTIAL"] = properties_df.apply(lambda row: 
+            row["HISTORIC"] and (row["USE_CODE"] < 200) and (row["USE_CODE"] not in range(130, 141)),
+            axis=1
+        )
+
+        other_residential = properties_df[residential_criteria & ~properties_df["HISTORIC_RESIDENTIAL"]]
+        historic_resdential = properties_df[residential_criteria & properties_df["HISTORIC_RESIDENTIAL"]]
+
+        trend_data.append({
+            "year": COMPARE_YEAR,
+            "historic_residential": len(historic_resdential),
+            "other_residential": len(other_residential),
+            "historic_residential_units": historic_resdential["UNITS"].sum(),
+            "other_residential_units": other_residential["UNITS"].sum()
+        })
+    return (trend_data,)
+
+
+@app.cell
+def _(pd, trend_data):
+    pd.DataFrame(trend_data).plot.area(
+        x="year", y=["other_residential", "historic_residential"], 
+        title="Residential structures changing historic status",
+        figsize=(15, 10)
+    )
     return
 
 
 @app.cell
-def _(properties_df):
-    # historic, and housing
-    properties_df["HISTORIC_RESIDENTIAL"] = properties_df.apply(lambda row: row["HISTORIC"] and row["USE_CODE"] < 200, axis=1)
-    properties_df[
-        (properties_df["USE_CODE"] < 200) & 
-        (properties_df["USE_CODE"].map(lambda x: x not in range(130, 141)))
-    ]
-    return
-
-
-@app.cell
-def _():
+def _(pd, trend_data):
+    pd.DataFrame(trend_data).plot.area(
+        x="year",
+        y=["other_residential_units", "historic_residential_units"],
+        title="Residential units changing historic status",
+        figsize=(15, 10)
+    )
     return
 
 
