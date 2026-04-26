@@ -18,6 +18,8 @@ Code is written in python. Dependencies are managed with `uv`. Data is stored in
 
 YEAR_BUILT may be empty or 0. In such cases, assume the value is '$CURRENT_YEAR - 75' where $CURRENT_YEAR should be the year associated with the dataset.
 
+Residential land uses are tracked with USE_CODE values < 200, excluding the special-use codes 130-140.
+
 ## Data sources
 
 Data comes from MassGIS primarily, but also the US Census.
