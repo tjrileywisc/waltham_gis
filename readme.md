@@ -1,10 +1,10 @@
 
 # Analysis of the built environment of Waltham, MA
 
-This repository uses `pdm` for its dependencies and a postgis database for managing data.
+The goal of this repository is to put numbers to the development pattern of Waltham, MA. Primarily I'm interested in
+the housing market, but will also look into property taxes and the public school system.
 
-The data have been obtained from scripts [here](https://github.com/tjrileywisc/waltham_etl) are are using publicly
-available sources such as MassGIS and the US Census.
+Data will mostly come from MassGIS and the US Census.
 
 ## Investigations
 
@@ -27,3 +27,8 @@ available sources such as MassGIS and the US Census.
 ### ADU rezoning (2025)
 
 * [Pre-2025 rezoning](investigations/adu_rezoning_2025/before_upzoning.ipynb)
+
+## Misc
+
+More detail about the development process is tracked in the [Claude agent file](CLAUDE.md) and is more likely to be up to date. Broadly,
+this is targeting a python-based GIS analysis stack.
