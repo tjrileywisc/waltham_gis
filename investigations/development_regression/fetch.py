@@ -2,8 +2,19 @@
 import pandas as pd
 import geopandas as gpd
 
+from pathlib import Path
 from sqlalchemy import text
 from data.connect_db import get_db
+
+# Max by-right DUA per zoning district (NaN where no cap is defined)
+_ZONE_MAX_DUA: pd.Series = (
+    pd.read_csv(
+        Path(__file__).resolve().parent.parent.parent / "data" / "zoning_rules_table.csv",
+        skipinitialspace=True,
+    )
+    .set_index("District")["max DUA"]
+    .apply(pd.to_numeric, errors="coerce")
+)
 
 # One entry per distinct calendar year (mirrors development_turnover/fetch.py)
 ASSESSMENT_TABLES = [
@@ -101,6 +112,12 @@ def fetch_features_for_snapshot(table_name: str, year: int) -> pd.DataFrame:
     # Years since last recorded sale
     df["LS_DATE"] = pd.to_datetime(df["LS_DATE"], errors="coerce")
     df["years_since_sale"] = year - df["LS_DATE"].dt.year
+
+    # How many units short of the by-right max density the parcel is.
+    # LOT_SIZE is in acres; zones without a DUA cap get NaN (imputed later).
+    lot_size_safe = df["LOT_SIZE"].where(df["LOT_SIZE"] > 0)
+    current_dua = df["UNITS"] / lot_size_safe
+    df["UNDERDEVELOPED_DUA"] = (df["zone"].map(_ZONE_MAX_DUA) - current_dua).clip(lower=0)
 
     return df.drop(columns=["LS_DATE"])
 
