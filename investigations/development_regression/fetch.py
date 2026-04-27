@@ -1,0 +1,155 @@
+
+import pandas as pd
+import geopandas as gpd
+
+from sqlalchemy import text
+from data.connect_db import get_db
+
+# One entry per distinct calendar year (mirrors development_turnover/fetch.py)
+ASSESSMENT_TABLES = [
+    ("M308Assess_CY11_FY11", 2011),
+    ("M308Assess_CY14_FY14", 2014),
+    ("M308Assess_CY15_FY15", 2015),
+    ("M308Assess_CY16_FY16", 2016),
+    ("M308Assess_CY17_FY17", 2017),
+    ("M308Assess_CY18_FY18", 2018),
+    ("M308Assess_CY19_FY18", 2019),
+    ("M308Assess_CY20_FY20", 2020),
+    ("M308Assess_CY21_FY21", 2021),
+    ("M308Assess_CY22_FY22", 2022),
+    ("M308Assess_CY23_FY23", 2023),
+    ("M308Assess_CY25_FY25", 2025),
+    ("M308Assess_CY26_FY26", 2026),
+]
+
+# Adjacent snapshot pairs used for label construction
+CONSECUTIVE_PAIRS = [
+    (ASSESSMENT_TABLES[i][0], ASSESSMENT_TABLES[i + 1][0],
+     ASSESSMENT_TABLES[i][1], ASSESSMENT_TABLES[i + 1][1])
+    for i in range(len(ASSESSMENT_TABLES) - 1)
+]
+
+_PAR_TABLE = "M308TaxPar_CY25_FY25"
+
+_RESIDENTIAL_FILTER = (
+    'a."USE_CODE"::integer < 200'
+    ' AND (a."USE_CODE"::integer < 130 OR a."USE_CODE"::integer > 140)'
+)
+
+
+def fetch_features_for_snapshot(table_name: str, year: int) -> pd.DataFrame:
+    """Return features for all residential parcels in one assessment snapshot.
+
+    Zone is resolved via a PostGIS spatial join (parcel centroid within
+    WalthamZoning polygon) using the latest parcel geometry as the spatial
+    reference; zoning boundaries are stable across the dataset's time range.
+
+    YEAR_BUILT = 0 (unknown build date) is treated as year - 75, consistent
+    with the project convention documented in CLAUDE.md.
+
+    Returns a DataFrame with columns:
+        LOC_ID, year_built, units, use_code, lot_size, bldg_val, land_val,
+        total_val, bld_area, zone,
+        building_age, land_value_ratio, years_since_sale, is_sfh.
+    """
+    engine = get_db()
+    with engine.connect() as conn:
+        df = pd.read_sql(
+            text(f"""
+                SELECT
+                    a."LOC_ID",
+                    MAX(a."YEAR_BUILT")           AS year_built,
+                    SUM(a."UNITS")                AS units,
+                    MIN(a."USE_CODE"::integer)     AS use_code,
+                    MAX(a."LOT_SIZE")              AS lot_size,
+                    MAX(a."BLDG_VAL")              AS bldg_val,
+                    MAX(a."LAND_VAL")              AS land_val,
+                    MAX(a."TOTAL_VAL")             AS total_val,
+                    MAX(a."BLD_AREA")              AS bld_area,
+                    MAX(a."LS_DATE")               AS ls_date,
+                    MAX(a."SITE_ADDR")             AS site_addr,
+                    MAX(a."OWNER1")               AS owner1,
+                    MAX(a."OWN_CITY")             AS own_city,
+                    z."NAME"                       AS zone
+                FROM "{table_name}" a
+                LEFT JOIN "{_PAR_TABLE}" p
+                    ON a."LOC_ID" = p."LOC_ID"
+                    AND p."POLY_TYPE" = 'FEE'
+                LEFT JOIN "WalthamZoning" z
+                    ON ST_Within(ST_Centroid(p.geom), z.geom)
+                WHERE {_RESIDENTIAL_FILTER}
+                GROUP BY a."LOC_ID", z."NAME"
+            """),
+            conn,
+        )
+
+    # Drop duplicate LOC_IDs from rare zone-boundary edge cases
+    df = df.drop_duplicates(subset=["LOC_ID"], keep="first")
+
+    # building_age: YEAR_BUILT = 0 → assume structure is 75 years old
+    df["building_age"] = (year - df["year_built"].replace(0, year - 75)).clip(lower=0)
+
+    # Land-value ratio: high → building contributes little to assessed value
+    df["land_value_ratio"] = df["land_val"] / (df["land_val"] + df["bldg_val"] + 1)
+
+    # Investor ownership: LLC/Trust in owner name, or owner mailing address is outside Waltham
+    df["investor_owned"] = (
+        df["owner1"].str.contains("LLC|TRUST", case=False, na=False)
+        | (df["own_city"].str.strip().str.upper() != "WALTHAM")
+    ).astype(int)
+
+    # Years since last recorded sale
+    df["ls_date"] = pd.to_datetime(df["ls_date"], errors="coerce")
+    df["years_since_sale"] = year - df["ls_date"].dt.year
+
+    return df.drop(columns=["ls_date"])
+
+
+def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int) -> set:
+    """Return the set of LOC_IDs that turned over between two consecutive snapshots.
+
+    A parcel is considered turned over if:
+    - Its MAX(YEAR_BUILT) increased and the old value was > 0 (redeveloped), or
+    - Its old MAX(YEAR_BUILT) was 0 and it now has a recent build year (new on vacant).
+    In both cases the new YEAR_BUILT must be within 3 years of yr_new.
+    """
+    engine = get_db()
+    with engine.connect() as conn:
+        redeveloped = pd.read_sql(
+            text(f"""
+                SELECT a."LOC_ID"
+                FROM (SELECT "LOC_ID", MAX("YEAR_BUILT") AS max_yb FROM "{tbl_new}" GROUP BY "LOC_ID") a
+                JOIN (SELECT "LOC_ID", MAX("YEAR_BUILT") AS max_yb FROM "{tbl_old}" GROUP BY "LOC_ID") b
+                  ON a."LOC_ID" = b."LOC_ID"
+                WHERE a.max_yb > b.max_yb
+                  AND b.max_yb > 0
+                  AND a.max_yb >= {yr_new - 3}
+            """),
+            conn,
+        )
+        new_on_vacant = pd.read_sql(
+            text(f"""
+                SELECT a."LOC_ID"
+                FROM (SELECT "LOC_ID", MAX("YEAR_BUILT") AS max_yb FROM "{tbl_new}" GROUP BY "LOC_ID") a
+                JOIN (SELECT "LOC_ID", MAX("YEAR_BUILT") AS max_yb FROM "{tbl_old}" GROUP BY "LOC_ID") b
+                  ON a."LOC_ID" = b."LOC_ID"
+                WHERE b.max_yb = 0
+                  AND a.max_yb > 0
+                  AND a.max_yb >= {yr_new - 3}
+            """),
+            conn,
+        )
+    return set(redeveloped["LOC_ID"]) | set(new_on_vacant["LOC_ID"])
+
+
+def fetch_parcel_geometry() -> gpd.GeoDataFrame:
+    """Return all parcel geometries from the latest snapshot.
+
+    Returns a GeoDataFrame with columns: LOC_ID, geom.
+    """
+    engine = get_db()
+    return gpd.read_postgis(
+        f'SELECT "LOC_ID", "geom" FROM "{_PAR_TABLE}"',
+        engine,
+        geom_col="geom",
+    )
