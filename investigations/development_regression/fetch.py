@@ -58,18 +58,18 @@ def fetch_features_for_snapshot(table_name: str, year: int) -> pd.DataFrame:
             text(f"""
                 SELECT
                     a."LOC_ID",
-                    MAX(a."YEAR_BUILT")           AS year_built,
-                    SUM(a."UNITS")                AS units,
-                    MIN(a."USE_CODE"::integer)     AS use_code,
-                    MAX(a."LOT_SIZE")              AS lot_size,
-                    MAX(a."BLDG_VAL")              AS bldg_val,
-                    MAX(a."LAND_VAL")              AS land_val,
-                    MAX(a."TOTAL_VAL")             AS total_val,
-                    MAX(a."BLD_AREA")              AS bld_area,
-                    MAX(a."LS_DATE")               AS ls_date,
-                    MAX(a."SITE_ADDR")             AS site_addr,
-                    MAX(a."OWNER1")               AS owner1,
-                    MAX(a."OWN_CITY")             AS own_city,
+                    MAX(a."YEAR_BUILT")           AS "YEAR_BUILT",
+                    SUM(a."UNITS")                AS "UNITS",
+                    MIN(a."USE_CODE"::integer)     AS "USE_CODE",
+                    MAX(a."LOT_SIZE")              AS "LOT_SIZE",
+                    MAX(a."BLDG_VAL")              AS "BLDG_VAL",
+                    MAX(a."LAND_VAL")              AS "LAND_VAL",
+                    MAX(a."TOTAL_VAL")             AS "TOTAL_VAL",
+                    MAX(a."BLD_AREA")              AS "BLD_AREA",
+                    MAX(a."LS_DATE")               AS "LS_DATE",
+                    MAX(a."SITE_ADDR")             AS "SITE_ADDR",
+                    MAX(a."OWNER1")               AS "OWNER1",
+                    MAX(a."OWN_CITY")             AS "OWN_CITY",
                     z."NAME"                       AS zone
                 FROM "{table_name}" a
                 LEFT JOIN "{_PAR_TABLE}" p
@@ -87,22 +87,22 @@ def fetch_features_for_snapshot(table_name: str, year: int) -> pd.DataFrame:
     df = df.drop_duplicates(subset=["LOC_ID"], keep="first")
 
     # building_age: YEAR_BUILT = 0 → assume structure is 75 years old
-    df["building_age"] = (year - df["year_built"].replace(0, year - 75)).clip(lower=0)
+    df["building_age"] = (year - df["YEAR_BUILT"].replace(0, year - 75)).clip(lower=0)
 
     # Land-value ratio: high → building contributes little to assessed value
-    df["land_value_ratio"] = df["land_val"] / (df["land_val"] + df["bldg_val"] + 1)
+    df["land_value_ratio"] = df["LAND_VAL"] / (df["LAND_VAL"] + df["BLDG_VAL"] + 1)
 
     # Investor ownership: LLC/Trust in owner name, or owner mailing address is outside Waltham
     df["investor_owned"] = (
-        df["owner1"].str.contains("LLC|TRUST", case=False, na=False)
-        | (df["own_city"].str.strip().str.upper() != "WALTHAM")
+        df["OWNER1"].str.contains("LLC|TRUST", case=False, na=False)
+        | (df["OWN_CITY"].str.strip().str.upper() != "WALTHAM")
     ).astype(int)
 
     # Years since last recorded sale
-    df["ls_date"] = pd.to_datetime(df["ls_date"], errors="coerce")
-    df["years_since_sale"] = year - df["ls_date"].dt.year
+    df["LS_DATE"] = pd.to_datetime(df["LS_DATE"], errors="coerce")
+    df["years_since_sale"] = year - df["LS_DATE"].dt.year
 
-    return df.drop(columns=["ls_date"])
+    return df.drop(columns=["LS_DATE"])
 
 
 def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int) -> set:

@@ -126,14 +126,14 @@ class StreetViewPanel(MacroElement):
 
             // ── Parcel click ───────────────────────────────────────────
             {{this.layer_name}}.on('click', function (e) {
-                var c    = e.layer.getBounds().getCenter();
-                var lat  = c.lat.toFixed(6);
-                var lng  = c.lng.toFixed(6);
-                var prob = (e.layer.feature.properties.prob_redevelopment * 100).toFixed(1);
-                var loc  = e.layer.feature.properties.LOC_ID || (lat + ', ' + lng);
+                var c     = e.layer.getBounds().getCenter();
+                var lat   = c.lat.toFixed(6);
+                var lng   = c.lng.toFixed(6);
+                var props = e.layer.feature.properties;
+                var loc   = props.SITE_ADDR || props.LOC_ID || (lat + ', ' + lng);
+                var header = loc;
 
-                document.getElementById('sv-addr-{{this._id}}').textContent =
-                    loc + '  (• ' + prob + '%)';
+                document.getElementById('sv-addr-{{this._id}}').textContent = header;
 
                 // Embedded satellite map (no API key required)
                 iframe.src =
