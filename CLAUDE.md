@@ -24,6 +24,16 @@ YEAR_BUILT may be empty or 0. In such cases, assume the value is '$CURRENT_YEAR 
 
 Residential land uses are tracked with USE_CODE values < 200, excluding the special-use codes 130-140.
 
+If you're ever asked to track adjacent communities, here they are (by name and MassGIS code):
+
+| City | Code |
+| Lexington | 155 |
+| Lincoln | 157 |
+| Weston | 333 |
+| Newton | 207 |
+| Watertown | 314 |
+| Belmont | 026 |
+
 ## Data sources
 
 Data comes from MassGIS primarily, but also the US Census.
