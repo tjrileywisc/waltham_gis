@@ -18,6 +18,9 @@ Data will mostly come from MassGIS and the US Census.
 
 * [Historical review](published/historical_review.html)
 
+* [Prediction of future development](investigations/development_regression/notebook.ipynb)
+(see also the more interactive [map](published/development_regression.html))
+
 ### MBTA Communities Act (2024)
 
 * [Pre-MBTAC upzoning](investigations/mbta_communities_act/before_upzoning.ipynb)
