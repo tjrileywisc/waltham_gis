@@ -44,7 +44,7 @@ _PAR_TABLE = "M308TaxPar_CY25_FY25"
 
 _RESIDENTIAL_FILTER = (
     'a."USE_CODE"::integer < 200'
-    ' AND (a."USE_CODE"::integer < 130 OR a."USE_CODE"::integer > 140)'
+    ' AND (a."USE_CODE"::integer < 132 OR a."USE_CODE"::integer > 140)'
 )
 
 
@@ -102,6 +102,9 @@ def fetch_features_for_snapshot(table_name: str, year: int) -> pd.DataFrame:
 
     # Land-value ratio: high → building contributes little to assessed value
     df["land_value_ratio"] = df["LAND_VAL"] / (df["LAND_VAL"] + df["BLDG_VAL"] + 1)
+
+    # Developable or potentially developable vacant land (USE_CODE 130 or 131)
+    df["EMPTY_LOT"] = df["USE_CODE"].isin([130, 131]).astype(int)
 
     # Investor ownership: LLC/Trust in owner name, or owner mailing address is outside Waltham
     df["investor_owned"] = (
