@@ -137,14 +137,16 @@ def fetch_features_for_snapshot(table_name: str, year: int) -> pd.DataFrame:
     return df.drop(columns=["LS_DATE"])
 
 
-def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int) -> set:
-    """Return the set of LOC_IDs that turned over between two consecutive snapshots.
+def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int,
+                          min_year: int | None = None) -> set:
+    """Return the set of LOC_IDs that turned over between two snapshots.
 
     A parcel is considered turned over if:
     - Its MAX(YEAR_BUILT) increased and the old value was > 0 (redeveloped), or
     - Its old MAX(YEAR_BUILT) was 0 and it now has a recent build year (new on vacant).
-    In both cases the new YEAR_BUILT must be within 3 years of yr_new.
+    In both cases the new YEAR_BUILT must be >= min_year (defaults to yr_new - 3).
     """
+    cutoff = min_year if min_year is not None else yr_new - 3
     engine = get_db()
     with engine.connect() as conn:
         redeveloped = pd.read_sql(
@@ -155,7 +157,7 @@ def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int) -> set:
                   ON a."LOC_ID" = b."LOC_ID"
                 WHERE a.max_yb > b.max_yb
                   AND b.max_yb > 0
-                  AND a.max_yb >= {yr_new - 3}
+                  AND a.max_yb >= {cutoff}
             """),
             conn,
         )
@@ -167,7 +169,7 @@ def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int) -> set:
                   ON a."LOC_ID" = b."LOC_ID"
                 WHERE b.max_yb = 0
                   AND a.max_yb > 0
-                  AND a.max_yb >= {yr_new - 3}
+                  AND a.max_yb >= {cutoff}
             """),
             conn,
         )
