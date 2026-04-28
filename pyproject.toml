@@ -24,7 +24,7 @@ dependencies = [
     "scikit-learn>=1.5.1",
     "psycopg[binary,pool]>=3.2.3",
     "owslib>=0.32.1",
-    "pywin32>=311",
+    'pywin32>=311;platform_system == "Windows"',
     "xgboost>=3.2.0",
     "shap>=0.51.0",
 ]
