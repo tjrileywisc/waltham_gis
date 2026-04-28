@@ -6,14 +6,20 @@ from pathlib import Path
 from sqlalchemy import text
 from data.connect_db import get_db
 
-# Max by-right DUA per zoning district (NaN where no cap is defined)
-_ZONE_MAX_DUA: pd.Series = (
-    pd.read_csv(
-        Path(__file__).resolve().parent.parent.parent / "data" / "zoning_rules_table.csv",
-        skipinitialspace=True,
-    )
-    .set_index("District")["max DUA"]
-    .apply(pd.to_numeric, errors="coerce")
+# Per-zone rules loaded once at import time
+_ZONE_RULES: pd.DataFrame = pd.read_csv(
+    Path(__file__).resolve().parent.parent.parent / "data" / "zoning_rules_table.csv",
+    skipinitialspace=True,
+).set_index("District").apply(pd.to_numeric, errors="coerce")
+
+# Max by-right DUA per zone (NaN where no cap is defined)
+_ZONE_MAX_DUA: pd.Series = _ZONE_RULES["max DUA"]
+
+# Minimum lot size per zone in acres (NaN where no minimum is defined; 0 → NaN)
+_ZONE_MIN_LOT_ACRES: pd.Series = (
+    _ZONE_RULES["lot area"]
+    .replace(0, float("nan"))
+    / 43_560
 )
 
 # One entry per distinct calendar year (mirrors development_turnover/fetch.py)
@@ -105,6 +111,12 @@ def fetch_features_for_snapshot(table_name: str, year: int) -> pd.DataFrame:
 
     # Developable or potentially developable vacant land (USE_CODE 130 or 131)
     df["EMPTY_LOT"] = df["USE_CODE"].isin([130, 131]).astype(int)
+
+    # Whether the parcel meets the by-right minimum lot size for its zone.
+    # LOT_SIZE is in acres; _ZONE_MIN_LOT_ACRES converts sq-ft minimums from the
+    # zoning table. NaN where the zone has no defined minimum (e.g. BC, I).
+    min_lot = df["zone"].map(_ZONE_MIN_LOT_ACRES)
+    df["meets_min_lot_size"] = (df["LOT_SIZE"] >= min_lot).astype("Int8").where(min_lot.notna())
 
     # Investor ownership: LLC/Trust in owner name, or owner mailing address is outside Waltham
     df["investor_owned"] = (
