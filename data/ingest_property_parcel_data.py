@@ -19,6 +19,7 @@ import geopandas as gpd
 import pandas as pd
 from shapely.geometry import MultiPolygon
 from sqlalchemy import text
+from sqlalchemy.sql import quoted_name
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from data.connect_db import get_db
@@ -46,14 +47,14 @@ def promote_to_multi(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 def load_assess(src: Path, table: str, engine) -> None:
     gdf = gpd.read_file(src)
     df = pd.DataFrame(gdf.drop(columns=["geometry"], errors="ignore"))
-    df.to_sql(table, engine, if_exists="replace", index=False)
+    df.to_sql(quoted_name(table, quote=True), engine, if_exists="replace", index=False)
 
 
 def load_taxpar(src: Path, table: str, engine) -> None:
     gdf = gpd.read_file(src)
     gdf = promote_to_multi(gdf)
     gdf = gdf.rename_geometry("geom")
-    gdf.to_postgis(table, engine, if_exists="replace", index=False)
+    gdf.to_postgis(quoted_name(table, quote=True), engine, if_exists="replace", index=False)
 
 
 def main(source_dir):
