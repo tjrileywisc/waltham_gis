@@ -32,7 +32,7 @@ def existing_tables(engine) -> set[str]:
         rows = conn.execute(
             text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
         ).fetchall()
-    return {r[0].lower() for r in rows}
+    return {r[0] for r in rows}
 
 
 def promote_to_multi(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -84,7 +84,7 @@ def main(source_dir):
         for src, table, loader in targets:
             if src is None:
                 continue
-            if args.skip_existing and table.lower() in already_loaded:
+            if args.skip_existing and table in already_loaded:
                 print(f"  skip  {table} (already exists)")
                 skipped += 1
                 continue
