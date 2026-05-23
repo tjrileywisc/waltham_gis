@@ -4,6 +4,7 @@ import geopandas as gpd
 
 from sqlalchemy import text
 from data.connect_db import get_db
+from waltham.constants import SQ_FT_PER_ACRE
 
 _RESIDENTIAL_FILTER = (
     '"USE_CODE"::integer < 200'
@@ -13,7 +14,7 @@ _RESIDENTIAL_FILTER = (
 
 def _bin_lot_sizes(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df["lot_size_bin"] = (df["LOT_SIZE"] / 500).round() * 500
+    df["lot_size_bin"] = (df["LOT_SIZE_SQFT"] / 500).round() * 500
     return df
 
 
@@ -21,6 +22,7 @@ def fetch_residential_lot_sizes() -> pd.DataFrame:
     """Return residential parcels with lot sizes from the 2025 assessment snapshot.
 
     Filters to USE_CODE < 200 (excl. 130-140) and LOT_SIZE > 0.
+    LOT_SIZE_SQFT is the lot size converted from acres to square feet.
     Adds a `lot_size_bin` column: lot size rounded to the nearest 500 sq ft.
     """
     engine = get_db()
@@ -34,6 +36,8 @@ def fetch_residential_lot_sizes() -> pd.DataFrame:
             ),
             conn,
         )
+    df = df.rename(columns={"LOT_SIZE": "LOT_SIZE_SQFT"})
+    df["LOT_SIZE_SQFT"] = df["LOT_SIZE_SQFT"] * SQ_FT_PER_ACRE
     return _bin_lot_sizes(df)
 
 
