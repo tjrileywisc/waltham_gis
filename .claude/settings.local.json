@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:walthamma.mapgeo.io)"
+      "WebFetch(domain:walthamma.mapgeo.io)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(cat pyproject.toml)",
+      "Bash(cat setup.cfg)",
+      "Bash(uv run *)",
+      "Bash(Test-Path *)"
     ]
   }
 }
