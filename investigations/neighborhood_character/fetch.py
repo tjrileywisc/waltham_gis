@@ -49,3 +49,23 @@ def fetch_parcel_geometry() -> gpd.GeoDataFrame:
         engine,
         geom_col="geom",
     )
+
+
+def fetch_waltham_zoning() -> gpd.GeoDataFrame:
+    """Return Waltham zoning district polygons."""
+    engine = get_db()
+    return gpd.read_postgis(
+        'SELECT "id", "NAME", "geom" FROM "WalthamZoning"',
+        engine,
+        geom_col="geom",
+    )
+
+
+def fetch_building_footprints() -> gpd.GeoDataFrame:
+    """Return all building footprints from the 2025 structures snapshot."""
+    engine = get_db()
+    return gpd.read_postgis(
+        'SELECT "geom", "SHAPE_AREA" FROM "structures_poly_308"',
+        engine,
+        geom_col="geom",
+    )
