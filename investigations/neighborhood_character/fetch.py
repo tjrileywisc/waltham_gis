@@ -1,4 +1,4 @@
-# investigations/lot_size_clustering/fetch.py
+# investigations/neighborhood_character/fetch.py
 import pandas as pd
 import geopandas as gpd
 
