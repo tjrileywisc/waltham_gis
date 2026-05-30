@@ -7,7 +7,8 @@
       "Bash(cat pyproject.toml)",
       "Bash(cat setup.cfg)",
       "Bash(uv run *)",
-      "Bash(Test-Path *)"
+      "Bash(Test-Path *)",
+      "Bash(dir investigations/)"
     ]
   }
 }
