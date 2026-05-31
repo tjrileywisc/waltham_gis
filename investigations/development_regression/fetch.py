@@ -149,25 +149,31 @@ def fetch_features_for_snapshot(table_name: str, year: int,
 def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int,
                           min_year: int | None = None,
                           taxpar_old: str | None = None,
-                          taxpar_new: str | None = None) -> set:
-    """Return the set of OLD-snapshot LOC_IDs that turned over between two snapshots.
+                          taxpar_new: str | None = None) -> pd.DataFrame:
+    """Return a DataFrame of OLD-snapshot LOC_IDs that turned over between two snapshots.
 
     A parcel is considered turned over if:
     - Its MAX(YEAR_BUILT) increased and the old value was > 0 (redeveloped), or
     - Its old MAX(YEAR_BUILT) was 0 and it now has a recent build year (new on vacant).
     In both cases the new YEAR_BUILT must be >= min_year (defaults to yr_new - 3).
 
-    When both taxpar_old and taxpar_new are provided, parcels are matched by
-    centroid: if the centroid of a new parcel falls within an old parcel's boundary,
-    they are treated as the same physical parcel regardless of LOC_ID changes.
+    When both taxpar_old and taxpar_new are provided, parcels are matched using
+    bidirectional centroid matching:
+    - Forward: new parcel centroid falls within an old parcel boundary (handles splits
+      and simple replacements).
+    - Reverse: old parcel centroid falls within a new parcel boundary (handles mergers,
+      where N old parcels collapse into 1 new parcel).
+    The `via_merger` column is True when the old parcel was exclusively caught by the
+    reverse direction, indicating it was absorbed into a larger new parcel.
     Returns OLD-snapshot loc_ids so results align with features DataFrames keyed on
     the old snapshot. Falls back to LOC_ID join when taxpar tables are unavailable.
+
+    Returns a DataFrame with columns: LOC_ID, via_merger.
     """
     cutoff = min_year if min_year is not None else yr_new - 3
     engine = get_db()
 
     if taxpar_old and taxpar_new:
-        # Centroid-based matching: new parcel centroid falls within old parcel boundary.
         sql = f"""
             WITH
             old_yb AS (
@@ -178,11 +184,12 @@ def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int,
                 SELECT "LOC_ID", MAX("YEAR_BUILT") AS max_yb
                 FROM "{tbl_new}" GROUP BY "LOC_ID"
             ),
-            matched AS (
+            forward AS (
                 SELECT DISTINCT
                     tp_old."LOC_ID" AS old_loc_id,
                     o.max_yb        AS old_yb,
-                    n.max_yb        AS new_yb
+                    n.max_yb        AS new_yb,
+                    FALSE           AS via_merger
                 FROM "{taxpar_new}" tp_new
                 JOIN "{taxpar_old}" tp_old
                     ON ST_Within(ST_Centroid(tp_new.geom), tp_old.geom)
@@ -190,14 +197,37 @@ def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int,
                 JOIN old_yb o ON o."LOC_ID" = tp_old."LOC_ID"
                 WHERE tp_new."POLY_TYPE" = 'FEE'
                   AND tp_old."POLY_TYPE" = 'FEE'
+            ),
+            reverse AS (
+                SELECT DISTINCT
+                    tp_old."LOC_ID" AS old_loc_id,
+                    o.max_yb        AS old_yb,
+                    n.max_yb        AS new_yb,
+                    TRUE            AS via_merger
+                FROM "{taxpar_old}" tp_old
+                JOIN "{taxpar_new}" tp_new
+                    ON ST_Within(ST_Centroid(tp_old.geom), tp_new.geom)
+                JOIN old_yb o ON o."LOC_ID" = tp_old."LOC_ID"
+                JOIN new_yb n ON n."LOC_ID" = tp_new."LOC_ID"
+                WHERE tp_old."POLY_TYPE" = 'FEE'
+                  AND tp_new."POLY_TYPE" = 'FEE'
+            ),
+            matched AS (
+                SELECT * FROM forward
+                UNION ALL
+                SELECT * FROM reverse
             )
-            SELECT old_loc_id AS "LOC_ID" FROM matched
+            SELECT
+                old_loc_id           AS "LOC_ID",
+                BOOL_AND(via_merger) AS via_merger
+            FROM matched
             WHERE (new_yb > old_yb AND old_yb > 0 AND new_yb >= {cutoff})
                OR (old_yb = 0 AND new_yb > 0 AND new_yb >= {cutoff})
+            GROUP BY old_loc_id
         """
         with engine.connect() as conn:
             result = pd.read_sql(text(sql), conn)
-        return set(result["LOC_ID"])
+        return result[["LOC_ID", "via_merger"]]
 
     # Fallback: plain LOC_ID join for snapshots without per-year taxpar tables
     with engine.connect() as conn:
@@ -225,7 +255,8 @@ def fetch_turnover_labels(tbl_old: str, tbl_new: str, yr_new: int,
             """),
             conn,
         )
-    return set(redeveloped["LOC_ID"]) | set(new_on_vacant["LOC_ID"])
+    all_ids = set(redeveloped["LOC_ID"]) | set(new_on_vacant["LOC_ID"])
+    return pd.DataFrame({"LOC_ID": sorted(all_ids), "via_merger": False})
 
 
 def fetch_parcel_geometry() -> gpd.GeoDataFrame:
@@ -239,3 +270,27 @@ def fetch_parcel_geometry() -> gpd.GeoDataFrame:
         engine,
         geom_col="geom",
     )
+
+
+def fetch_disappeared_parcels(old_taxpar: str, old_assess: str,
+                               new_assess: str) -> gpd.GeoDataFrame:
+    """Return residential parcel geometries from old_taxpar absent from new_assess.
+
+    Parcels whose LOC_ID no longer appears in a later snapshot were subdivided,
+    merged, or renumbered — often a redevelopment signal the YEAR_BUILT
+    comparison alone misses.
+
+    Returns a GeoDataFrame with columns: LOC_ID, SITE_ADDR, geom.
+    """
+    engine = get_db()
+    sql = text(f"""
+        SELECT p."LOC_ID" AS "LOC_ID", MAX(a."SITE_ADDR") AS "SITE_ADDR", p.geom
+        FROM "{old_taxpar}" p
+        JOIN "{old_assess}" a ON a."LOC_ID" = p."LOC_ID"
+        WHERE p."POLY_TYPE" = 'FEE'
+          AND {_RESIDENTIAL_FILTER}
+          AND p."LOC_ID" NOT IN (SELECT "LOC_ID" FROM "{new_assess}")
+        GROUP BY p."LOC_ID", p.geom
+    """)
+    with engine.connect() as conn:
+        return gpd.read_postgis(sql, conn, geom_col="geom")
