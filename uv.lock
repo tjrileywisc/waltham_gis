@@ -9,7 +9,7 @@ resolution-markers = [
 ]
 
 [[package]]
-name = ""
+name = "waltham_gis"
 version = "1.0"
 source = { virtual = "." }
 dependencies = [
