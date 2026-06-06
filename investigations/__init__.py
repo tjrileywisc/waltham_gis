@@ -125,15 +125,14 @@ class StreetViewPanel(MacroElement):
             });
 
             // ── Parcel click ───────────────────────────────────────────
-            {{this.layer_name}}.on('click', function (e) {
+            function svOpen_{{this._id}}(e) {
                 var c     = e.layer.getBounds().getCenter();
                 var lat   = c.lat.toFixed(6);
                 var lng   = c.lng.toFixed(6);
                 var props = e.layer.feature.properties;
                 var loc   = props.SITE_ADDR || props.LOC_ID || (lat + ', ' + lng);
-                var header = loc;
 
-                document.getElementById('sv-addr-{{this._id}}').textContent = header;
+                document.getElementById('sv-addr-{{this._id}}').textContent = loc;
 
                 // Embedded satellite map (no API key required)
                 iframe.src =
@@ -146,12 +145,18 @@ class StreetViewPanel(MacroElement):
 
                 panel.style.transform = 'translateX(0)';
                 if (mapEl) { mapEl.style.maxWidth = '62vw'; mapVar.invalidateSize(); }
-            });
+            }
+
+            {{this.layer_name}}.on('click', svOpen_{{this._id}});
+            {% for layer in this.extra_layers %}
+            {{layer}}.on('click', svOpen_{{this._id}});
+            {% endfor %}
         })();
         {%- endmacro %}
     """)
 
-    def __init__(self, layer_name):
+    def __init__(self, layer_name, extra_layers=None):
         super().__init__()
         self._name = 'StreetViewPanel'
         self.layer_name = layer_name
+        self.extra_layers = extra_layers or []
