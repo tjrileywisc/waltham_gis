@@ -9,57 +9,6 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "waltham_gis"
-version = "1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "dbfread" },
-    { name = "folium" },
-    { name = "geoalchemy2" },
-    { name = "geopandas" },
-    { name = "ipympl" },
-    { name = "jupyter" },
-    { name = "mplcursors" },
-    { name = "openpyxl" },
-    { name = "owslib" },
-    { name = "psycopg", extra = ["binary", "pool"] },
-    { name = "pycodestyle" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pywin32", marker = "sys_platform == 'win32'" },
-    { name = "scikit-learn" },
-    { name = "seaborn" },
-    { name = "shap" },
-    { name = "sqlalchemy" },
-    { name = "tqdm" },
-    { name = "xgboost" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "dbfread", specifier = ">=2.0.7" },
-    { name = "folium", specifier = ">=0.15.0" },
-    { name = "geoalchemy2", specifier = ">=0.15.2" },
-    { name = "geopandas", specifier = ">=0.12.2" },
-    { name = "ipympl", specifier = ">=0.9.3" },
-    { name = "jupyter", specifier = ">=1.0.0" },
-    { name = "mplcursors", specifier = ">=0.5.2" },
-    { name = "openpyxl", specifier = ">=3.1.2" },
-    { name = "owslib", specifier = ">=0.32.1" },
-    { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2.3" },
-    { name = "pycodestyle", specifier = ">=2.11.1" },
-    { name = "pytest", specifier = ">=7.4.3" },
-    { name = "pytest-cov", specifier = ">=4.1.0" },
-    { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=311" },
-    { name = "scikit-learn", specifier = ">=1.5.1" },
-    { name = "seaborn", specifier = ">=0.12.2" },
-    { name = "shap", specifier = ">=0.51.0" },
-    { name = "sqlalchemy", specifier = ">=2.0.30" },
-    { name = "tqdm", specifier = ">=4.64.1" },
-    { name = "xgboost", specifier = ">=3.2.0" },
-]
-
-[[package]]
 name = "anyio"
 version = "4.13.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1245,6 +1194,15 @@ wheels = [
 ]
 
 [[package]]
+name = "narwhals"
+version = "2.23.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/ac/66ed1fc6e38a0c0f330627ec5c5d597990d6159b6712b82af0ad2c65f06c/narwhals-2.23.0.tar.gz", hash = "sha256:13e7ff5b4bb4a2f77b907c2e4d8a76e273dfc1323a3c997440a2f9fd26aed408", size = 656209, upload-time = "2026-07-01T11:21:53.278Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f4/4e/afc8c31605cb8be1d3bb4438c4d979daa104dab6306cd2b87abe9c3a7299/narwhals-2.23.0-py3-none-any.whl", hash = "sha256:769e7b9ab102c93d8fa019f6b4cd1a657909b04a20bf6210e5a35aae06814ae9", size = 458938, upload-time = "2026-07-01T11:21:51.677Z" },
+]
+
+[[package]]
 name = "nbclient"
 version = "0.10.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1568,6 +1526,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/9f/4a/0883b8e3802965322523f0b200ecf33d31f10991d0401162f4b23c698b42/platformdirs-4.9.6.tar.gz", hash = "sha256:3bfa75b0ad0db84096ae777218481852c0ebc6c727b3168c1b9e0118e458cf0a", size = 29400, upload-time = "2026-04-09T00:04:10.812Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/75/a6/a0a304dc33b49145b21f4808d763822111e67d1c3a32b524a1baf947b6e1/platformdirs-4.9.6-py3-none-any.whl", hash = "sha256:e61adb1d5e5cb3441b4b7710bea7e4c12250ca49439228cc1021c00dcfac0917", size = 21348, upload-time = "2026-04-09T00:04:09.463Z" },
+]
+
+[[package]]
+name = "plotly"
+version = "6.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "narwhals" },
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/94/fd/d72c292d78aadb93d1a9bcd76bf3c678271040c7cf10abe5788b33040a39/plotly-6.8.0.tar.gz", hash = "sha256:e088e7ddc68d4f70e3d66659224727a45296d71d2b8284181862d3d8f1f0d88f", size = 6915161, upload-time = "2026-06-03T18:33:40.226Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f9/14/abe5ce876ab5b66ee3c691bf537fcd43d037aea55d447aacf74630a8f31e/plotly-6.8.0-py3-none-any.whl", hash = "sha256:13c5c4a0f70b74cab1913eda0de49b826df5931708eb6f9c3010040614700ec8", size = 9902055, upload-time = "2026-06-03T18:33:34.26Z" },
 ]
 
 [[package]]
@@ -2337,6 +2308,59 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556, upload-time = "2026-01-07T16:24:43.925Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584, upload-time = "2026-01-07T16:24:42.685Z" },
+]
+
+[[package]]
+name = "waltham-gis"
+version = "1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "dbfread" },
+    { name = "folium" },
+    { name = "geoalchemy2" },
+    { name = "geopandas" },
+    { name = "ipympl" },
+    { name = "jupyter" },
+    { name = "mplcursors" },
+    { name = "openpyxl" },
+    { name = "owslib" },
+    { name = "plotly" },
+    { name = "psycopg", extra = ["binary", "pool"] },
+    { name = "pycodestyle" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "scikit-learn" },
+    { name = "seaborn" },
+    { name = "shap" },
+    { name = "sqlalchemy" },
+    { name = "tqdm" },
+    { name = "xgboost" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "dbfread", specifier = ">=2.0.7" },
+    { name = "folium", specifier = ">=0.15.0" },
+    { name = "geoalchemy2", specifier = ">=0.15.2" },
+    { name = "geopandas", specifier = ">=0.12.2" },
+    { name = "ipympl", specifier = ">=0.9.3" },
+    { name = "jupyter", specifier = ">=1.0.0" },
+    { name = "mplcursors", specifier = ">=0.5.2" },
+    { name = "openpyxl", specifier = ">=3.1.2" },
+    { name = "owslib", specifier = ">=0.32.1" },
+    { name = "plotly", specifier = ">=6.8.0" },
+    { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2.3" },
+    { name = "pycodestyle", specifier = ">=2.11.1" },
+    { name = "pytest", specifier = ">=7.4.3" },
+    { name = "pytest-cov", specifier = ">=4.1.0" },
+    { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=311" },
+    { name = "scikit-learn", specifier = ">=1.5.1" },
+    { name = "seaborn", specifier = ">=0.12.2" },
+    { name = "shap", specifier = ">=0.51.0" },
+    { name = "sqlalchemy", specifier = ">=2.0.30" },
+    { name = "tqdm", specifier = ">=4.64.1" },
+    { name = "xgboost", specifier = ">=3.2.0" },
 ]
 
 [[package]]
