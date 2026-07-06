@@ -11,8 +11,8 @@ def get_db() -> Engine:
 
     config = json.load(open(CONFIG))
 
-    username = config["username"]
-    password = config["password"]
+    username = config["postgres"]["username"]
+    password = config["postgres"]["password"]
 
     url = f"postgresql+psycopg://{username}:{password}@127.0.0.1:5432/walthamdata"
 
