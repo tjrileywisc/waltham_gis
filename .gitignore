@@ -16,9 +16,11 @@ data/Buildings
 data/gis
 data/mbta_communities
 
+# generated data
 derived
 html
 *.csv
+*.xlsx
 
 # other
 config.json
