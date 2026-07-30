@@ -21,6 +21,7 @@ derived
 html
 *.csv
 *.xlsx
+published/index.html
 
 # other
 config.json
