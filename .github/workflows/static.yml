@@ -5,6 +5,8 @@ on:
     branches: ["main"]
     paths:
       - 'published/**'
+      - 'useful_scripts/generate_index.py'
+      - 'useful_scripts/templates/**'
 
   workflow_dispatch:
 
@@ -26,6 +28,14 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+      - name: set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: pyproject.toml
+      - name: install jinja2
+        run: pip install jinja2
+      - name: generate index
+        run: python useful_scripts/generate_index.py
       - name: setup pages
         uses: actions/configure-pages@v5
       - name: upload artifact
